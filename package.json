@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "hardhat": "^2.12.5"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.8.0",
+    "ethers": "^5.7.2"
+  }
+}
