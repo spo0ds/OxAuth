@@ -11,4 +11,6 @@ interface INTNFT {
     function burn(uint tokenId) external;
 
     // function revoke(uint tokenId) external;
+
+    function getTokenCounter() external view returns (uint);
 }
