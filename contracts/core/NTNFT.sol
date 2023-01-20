@@ -18,22 +18,22 @@ contract NtNft is INTNFT, ERC721, Ownable {
         s_tokenCounter = 0;
     }
 
-    function mintNft() external override returns (uint256) {
-        _safeMint(msg.sender, s_tokenCounter);
+    function mintNft(address minter) external override returns (uint256) {
+        _safeMint(minter, s_tokenCounter);
         s_tokenCounter++;
         return s_tokenCounter;
     }
 
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 /*tokenId*/,
-        uint256 /*batchSize*/
-    ) internal pure override {
-        if (from != address(0) || to != address(0)) {
-            revert NtNft__NftNotTransferrable();
-        }
-    }
+    // function _beforeTokenTransfer(
+    //     address from,
+    //     address to,
+    //     uint256 /*tokenId*/,
+    //     uint256 /*batchSize*/
+    // ) internal pure override {
+    //     if (from != address(0) || to != address(0)) {
+    //         revert NtNft__NftNotTransferrable();
+    //     }
+    // }
 
     function _afterTokenTransfer(
         address from,
@@ -55,9 +55,9 @@ contract NtNft is INTNFT, ERC721, Ownable {
         _burn(tokenId);
     }
 
-    function revoke(uint tokenId) external override onlyOwner {
-        _burn(tokenId);
-    }
+    // function revoke(uint tokenId) external override onlyOwner {
+    //     _burn(tokenId);
+    // }
 
     function tokenURI(
         uint /*tokenId*/

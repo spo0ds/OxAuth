@@ -74,7 +74,7 @@ contract OxAuth is IOxAuth {
         address approver,
         address thirdParty,
         string memory data
-    ) external override onlyOnce onlyRequestedAccount(thirdParty, data) {
+    ) external override /* onlyOnce*/ onlyRequestedAccount(thirdParty, data) {
         _Approve[approver][thirdParty][data] = true;
         _StartingTimeInterval[approver][thirdParty][data] = block.timestamp;
         emit AccessGrant(

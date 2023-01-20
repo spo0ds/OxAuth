@@ -119,10 +119,8 @@ contract KYC is IKYC {
         assembly {
             /*
             First 32 bytes stores the length of the signature
-
             add(sig, 32) = pointer of sig + 32
             effectively, skips first 32 bytes of signature
-
             mload(p) loads next 32 bytes starting at the memory address p into memory
             */
 

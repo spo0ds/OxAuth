@@ -6,9 +6,9 @@ interface INTNFT {
     event Attest(address indexed to, uint indexed tokenId);
     event Revoke(address indexed to, uint indexed tokenId);
 
-    function mintNft() external returns (uint);
+    function mintNft(address minter) external returns (uint256);
 
     function burn(uint tokenId) external;
 
-    function revoke(uint tokenId) external;
+    // function revoke(uint tokenId) external;
 }

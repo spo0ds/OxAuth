@@ -16,16 +16,16 @@ contract Router is IRouter {
     }
 
     function getNft() public override returns (uint) {
-        return INTNFT(nftAddress).mintNft();
+        return INTNFT(nftAddress).mintNft(msg.sender);
     }
 
     function burnNft(uint tokenId) public override {
         INTNFT(nftAddress).burn(tokenId);
     }
 
-    function revokeNft(uint tokenId) public override {
-        INTNFT(nftAddress).revoke(tokenId);
-    }
+    // function revokeNft(uint tokenId) public override {
+    //     INTNFT(nftAddress).revoke(tokenId);
+    // }
 
     function fillKycDetails(
         string memory _name,
@@ -53,8 +53,8 @@ contract Router is IRouter {
         );
     }
 
-    function getHash(address walletAddress) public override {
-        IKYC(kycAddress).generateHash(walletAddress);
+    function getHash(address walletAddress) public override returns (bytes32) {
+        return IKYC(kycAddress).generateHash(walletAddress);
     }
 
     function verifySignature(
@@ -73,11 +73,11 @@ contract Router is IRouter {
     }
 
     function approveOthersRequest(
-        address approver,
+        // address approver,
         address thirdParty,
         string memory data
     ) public override {
-        IKYC(kycAddress).grantTheRequest(approver, thirdParty, data);
+        IKYC(kycAddress).grantTheRequest(msg.sender, thirdParty, data);
     }
 
     function displayApprovedData(

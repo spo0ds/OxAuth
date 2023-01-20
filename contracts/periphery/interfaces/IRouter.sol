@@ -7,7 +7,7 @@ interface IRouter {
 
     function burnNft(uint tokenId) external;
 
-    function revokeNft(uint tokenId) external;
+    // function revokeNft(uint tokenId) external;
 
     function fillKycDetails(
         string memory _name,
@@ -22,7 +22,7 @@ interface IRouter {
         string memory _location
     ) external;
 
-    function getHash(address walletAddress) external;
+    function getHash(address walletAddress) external returns (bytes32);
 
     function verifySignature(
         address walletAddress,
@@ -36,7 +36,7 @@ interface IRouter {
     ) external;
 
     function approveOthersRequest(
-        address approver,
+        // address approver,
         address thirdParty,
         string memory data
     ) external;
