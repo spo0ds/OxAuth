@@ -160,10 +160,9 @@ contract KYC is IKYC {
     // still remaining
     function displayData(
         address walletAddress,
-        address thirdParty,
         string memory data
     ) external override {
-        if (!IOxAuth(oxAuthAddress).viewData(walletAddress, thirdParty, data)) {
+        if (!IOxAuth(oxAuthAddress).viewData(walletAddress, data)) {
             revert KYC__CannotViewData();
         }
         string memory userData;

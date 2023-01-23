@@ -87,10 +87,9 @@ contract OxAuth is IOxAuth {
 
     function viewData(
         address walletAddress,
-        address thirdParty,
         string memory data
     ) external override onlyAtTime(walletAddress, data) returns (bool) {
-        if (_Approve[walletAddress][thirdParty][data] == false) {
+        if (_Approve[walletAddress][msg.sender][data] == false) {
             revert OxAuth__NotApprovedToView();
         }
         return true;

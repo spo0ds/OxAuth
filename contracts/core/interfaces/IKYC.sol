@@ -35,11 +35,7 @@ interface IKYC {
         string memory data
     ) external;
 
-    function displayData(
-        address walletAddress,
-        address thirdParty,
-        string memory data
-    ) external;
+    function displayData(address walletAddress, string memory data) external;
 
     function revokeApprove(address thirdParty, string memory data) external;
 }
