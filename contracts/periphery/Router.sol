@@ -84,7 +84,7 @@ contract Router is IRouter {
         address walletAddress,
         string memory data
     ) public override {
-        IKYC(kycAddress).displayData(walletAddress, data);
+        IKYC(kycAddress).displayData(walletAddress, msg.sender, data);
     }
 
     function removeApprove(

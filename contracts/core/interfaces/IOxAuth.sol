@@ -37,6 +37,7 @@ interface IOxAuth {
 
     function viewData(
         address walletAddress,
+        address thirdParty,
         string memory data
     ) external returns (bool);
 
