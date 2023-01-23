@@ -143,10 +143,16 @@ contract KYC is IKYC {
 
     function requestForApproval(
         address walletAddress,
+        address thirdParty,
         string memory data,
         uint timePeriod
     ) external override {
-        IOxAuth(oxAuthAddress).requestApprove(walletAddress, data, timePeriod);
+        IOxAuth(oxAuthAddress).requestApprove(
+            walletAddress,
+            thirdParty,
+            data,
+            timePeriod
+        );
     }
 
     function grantTheRequest(
@@ -218,9 +224,10 @@ contract KYC is IKYC {
     }
 
     function revokeApprove(
+        address walletAddress,
         address thirdParty,
         string memory data
     ) external override {
-        IOxAuth(oxAuthAddress).revokeGrant(thirdParty, data);
+        IOxAuth(oxAuthAddress).revokeGrant(walletAddress, thirdParty, data);
     }
 }
