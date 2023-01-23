@@ -25,6 +25,7 @@ interface IOxAuth {
 
     function requestApprove(
         address walletAddress,
+        address thirdParty,
         string memory data,
         uint timePeriod
     ) external;
@@ -40,5 +41,9 @@ interface IOxAuth {
         string memory data
     ) external returns (bool);
 
-    function revokeGrant(address thirdParty, string memory data) external;
+    function revokeGrant(
+        address walletAddress,
+        address thirdParty,
+        string memory data
+    ) external;
 }

@@ -69,7 +69,12 @@ contract Router is IRouter {
         string memory data,
         uint timePeriod
     ) public override {
-        IKYC(kycAddress).requestForApproval(walletAddress, data, timePeriod);
+        IKYC(kycAddress).requestForApproval(
+            walletAddress,
+            msg.sender,
+            data,
+            timePeriod
+        );
     }
 
     function approveOthersRequest(
@@ -91,6 +96,6 @@ contract Router is IRouter {
         address thirdParty,
         string memory data
     ) public override {
-        IKYC(kycAddress).revokeApprove(thirdParty, data);
+        IKYC(kycAddress).revokeApprove(msg.sender, thirdParty, data);
     }
 }

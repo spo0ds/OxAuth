@@ -25,6 +25,7 @@ interface IKYC {
 
     function requestForApproval(
         address walletAddress,
+        address thirdParty,
         string memory data,
         uint timePeriod
     ) external;
@@ -37,5 +38,9 @@ interface IKYC {
 
     function displayData(address walletAddress, string memory data) external;
 
-    function revokeApprove(address thirdParty, string memory data) external;
+    function revokeApprove(
+        address wallletAddress,
+        address thirdParty,
+        string memory data
+    ) external;
 }
