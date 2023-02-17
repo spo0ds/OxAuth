@@ -66,15 +66,9 @@ contract Router is IRouter {
 
     function requestDataFromOtherAddress(
         address walletAddress,
-        string memory data,
-        uint timePeriod
+        string memory data
     ) public override {
-        IKYC(kycAddress).requestForApproval(
-            walletAddress,
-            msg.sender,
-            data,
-            timePeriod
-        );
+        IKYC(kycAddress).requestForApproval(walletAddress, msg.sender, data);
     }
 
     function approveOthersRequest(

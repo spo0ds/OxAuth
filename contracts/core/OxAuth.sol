@@ -62,13 +62,11 @@ contract OxAuth is IOxAuth {
     function requestApprove(
         address walletAddress,
         address thirdParty,
-        string memory data,
-        uint timePeriod
+        string memory data
     ) external override onlyOnce {
         _ApproveStatus[thirdParty] = Status.Asked;
         _RequestedData[thirdParty][walletAddress] = data;
-        _RequestTimeInterval[thirdParty][data] = timePeriod;
-        emit ApproveRequest(thirdParty, walletAddress, data, timePeriod);
+        emit ApproveRequest(thirdParty, walletAddress, data);
     }
 
     function grantAccess(
@@ -78,12 +76,7 @@ contract OxAuth is IOxAuth {
     ) external override /* onlyOnce*/ onlyRequestedAccount(thirdParty, data) {
         _Approve[approver][thirdParty][data] = true;
         _StartingTimeInterval[approver][thirdParty][data] = block.timestamp;
-        emit AccessGrant(
-            approver,
-            thirdParty,
-            data,
-            _RequestTimeInterval[thirdParty][data]
-        );
+        emit AccessGrant(approver, thirdParty, data);
     }
 
     function viewData(

@@ -6,15 +6,13 @@ interface IOxAuth {
     event ApproveRequest(
         address indexed requester,
         address indexed to,
-        string indexed data,
-        uint timePeriod
+        string indexed data
     );
 
     event AccessGrant(
         address indexed approver,
         address indexed thirdParty,
-        string indexed data,
-        uint timePeriod
+        string indexed data
     );
 
     event GrantRevoke(
@@ -26,8 +24,7 @@ interface IOxAuth {
     function requestApprove(
         address walletAddress,
         address thirdParty,
-        string memory data,
-        uint timePeriod
+        string memory data
     ) external;
 
     function grantAccess(

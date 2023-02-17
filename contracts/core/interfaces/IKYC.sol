@@ -26,8 +26,7 @@ interface IKYC {
     function requestForApproval(
         address walletAddress,
         address thirdParty,
-        string memory data,
-        uint timePeriod
+        string memory data
     ) external;
 
     function grantTheRequest(

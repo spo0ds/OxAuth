@@ -31,8 +31,7 @@ interface IRouter {
 
     function requestDataFromOtherAddress(
         address walletAddress,
-        string memory data,
-        uint timePeriod
+        string memory data
     ) external;
 
     function approveOthersRequest(
