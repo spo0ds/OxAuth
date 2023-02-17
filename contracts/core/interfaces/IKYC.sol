@@ -2,6 +2,8 @@
 
 pragma solidity 0.8.17;
 
+import "../libraries/Types.sol";
+
 interface IKYC {
     function getUserData(
         string memory _name,
@@ -39,7 +41,7 @@ interface IKYC {
         address walletAddress,
         address thirdParty,
         string memory data
-    ) external;
+    ) external returns (string memory);
 
     function revokeApprove(
         address wallletAddress,

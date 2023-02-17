@@ -48,16 +48,16 @@ contract OxAuth is IOxAuth {
         _;
     }
 
-    modifier onlyAtTime(address walletAddress, string memory data) {
-        if (
-            block.timestamp >
-            _StartingTimeInterval[walletAddress][msg.sender][data]
-        ) {
-            _Approve[walletAddress][msg.sender][data] = false;
-            revert OxAuth__TimeFinishedToView();
-        }
-        _;
-    }
+    // modifier onlyAtTime(address walletAddress, string memory data) {
+    //     if (
+    //         block.timestamp >
+    //         _StartingTimeInterval[walletAddress][msg.sender][data]
+    //     ) {
+    //         _Approve[walletAddress][msg.sender][data] = false;
+    //         revert OxAuth__TimeFinishedToView();
+    //     }
+    //     _;
+    // }
 
     function requestApprove(
         address walletAddress,
@@ -82,8 +82,8 @@ contract OxAuth is IOxAuth {
     function viewData(
         address walletAddress,
         address thirdParty,
-        string memory data
-    ) external override onlyAtTime(walletAddress, data) returns (bool) {
+        string memory data /*onlyAtTime(walletAddress, data)*/
+    ) external view override returns (bool) {
         if (_Approve[walletAddress][thirdParty][data] == false) {
             revert OxAuth__NotApprovedToView();
         }

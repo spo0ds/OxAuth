@@ -82,8 +82,8 @@ contract Router is IRouter {
     function displayApprovedData(
         address walletAddress,
         string memory data
-    ) public override {
-        IKYC(kycAddress).displayData(walletAddress, msg.sender, data);
+    ) public override returns (string memory) {
+        return IKYC(kycAddress).displayData(walletAddress, msg.sender, data);
     }
 
     function removeApprove(

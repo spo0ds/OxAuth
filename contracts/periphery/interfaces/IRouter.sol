@@ -43,7 +43,7 @@ interface IRouter {
     function displayApprovedData(
         address walletAddress,
         string memory data
-    ) external;
+    ) external returns (string memory);
 
     function removeApprove(address thirdParty, string memory data) external;
 }

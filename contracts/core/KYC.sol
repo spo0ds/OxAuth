@@ -162,11 +162,10 @@ contract KYC is IKYC {
         address walletAddress,
         address thirdParty,
         string memory data
-    ) external override {
+    ) external override returns (string memory userData) {
         if (!IOxAuth(oxAuthAddress).viewData(walletAddress, thirdParty, data)) {
             revert KYC__CannotViewData();
         }
-        string memory userData;
         if (keccak256(abi.encode("name")) == keccak256(abi.encode(data))) {
             userData = s_userInfo[walletAddress].name;
         }
