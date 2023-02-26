@@ -23,8 +23,7 @@ contract KYC is IKYC, OxAuth, NtNft {
     //     oxAuthAddress = _oxAuthAddress;
     // }
 
-    function getUserData(
-        address user,
+    function setUserData(
         string memory _name,
         string memory _father_name,
         string memory _mother_name,
@@ -36,7 +35,7 @@ contract KYC is IKYC, OxAuth, NtNft {
         string memory _pan_number,
         string memory _location
     ) external {
-        s_userInfo[user] = Types.UserDetail(
+        s_userInfo[msg.sender] = Types.UserDetail(
             _name,
             _father_name,
             _mother_name,
@@ -53,37 +52,47 @@ contract KYC is IKYC, OxAuth, NtNft {
 
     function getMessageHash(
         address walletAddress
-    ) internal view returns (bytes32) {
+    ) private view returns (bytes32) {
+        Types.UserDetail memory userData = s_userInfo[walletAddress];
         return
             keccak256(
                 abi.encodePacked(
-                    s_userInfo[walletAddress].name,
-                    s_userInfo[walletAddress].father_name,
-                    s_userInfo[walletAddress].mother_name,
-                    s_userInfo[walletAddress].grandFather_name,
-                    s_userInfo[walletAddress].phone_number,
-                    s_userInfo[walletAddress].dob,
-                    s_userInfo[walletAddress].citizenship_number,
-                    s_userInfo[walletAddress].pan_number,
-                    s_userInfo[walletAddress].location
+                    userData.name,
+                    userData.father_name,
+                    userData.mother_name,
+                    userData.grandFather_name,
+                    userData.phone_number,
+                    userData.dob,
+                    userData.citizenship_number,
+                    userData.pan_number,
+                    userData.location
                 )
             );
     }
 
     function getEthSignedMessageHash(
         address walletAddress
-    ) internal returns (bytes32) {
+    ) private returns (bytes32) {
         /*
         Signature is produced by signing a keccak256 hash with the following format:
         "\x19Ethereum Signed Message\n" + len(msg) + msg
         */
-        return
-            s_hashedData[walletAddress] = keccak256(
-                abi.encodePacked(
-                    "\x19Ethereum Signed Message:\n32",
-                    getMessageHash(walletAddress)
-                )
-            );
+        // return
+        //     s_hashedData[walletAddress] = keccak256(
+        //         abi.encodePacked(
+        //             "\x19Ethereum Signed Message:\n32",
+        //             getMessageHash(walletAddress)
+        //         )
+        //     );
+        bytes32 data = keccak256(
+            abi.encodePacked(
+                "\x19Ethereum Signed Message:\n32",
+                getMessageHash(walletAddress)
+            )
+        );
+        s_hashedData[walletAddress] = data;
+
+        return data;
     }
 
     function generateHash(

@@ -5,8 +5,7 @@ pragma solidity 0.8.17;
 import "../libraries/Types.sol";
 
 interface IKYC {
-    function getUserData(
-        address user,
+    function setUserData(
         string memory _name,
         string memory _father_name,
         string memory _mother_name,
