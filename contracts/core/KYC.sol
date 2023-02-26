@@ -5,21 +5,26 @@ pragma solidity 0.8.17;
 import "./interfaces/IKYC.sol";
 import "./libraries/Types.sol";
 import "./interfaces/IOxAuth.sol";
+import "./NTNFT.sol";
+import "./OxAuth.sol";
 
 error KYC__INVALIDSignatureLength();
 error KYC__CannotViewData();
 error KYC__DataDoesNotExist();
 
-contract KYC is IKYC {
+contract KYC is IKYC, OxAuth, NtNft {
     mapping(address => Types.UserDetail) private s_userInfo;
     mapping(address => bytes32) private s_hashedData;
-    address private immutable oxAuthAddress;
 
-    constructor(address _oxAuthAddress) {
-        oxAuthAddress = _oxAuthAddress;
-    }
+    // address private immutable oxAuthAddress;
+    OxAuth oxAuth;
+
+    // constructor(address _oxAuthAddress) {
+    //     oxAuthAddress = _oxAuthAddress;
+    // }
 
     function getUserData(
+        address user,
         string memory _name,
         string memory _father_name,
         string memory _mother_name,
@@ -31,7 +36,7 @@ contract KYC is IKYC {
         string memory _pan_number,
         string memory _location
     ) external {
-        s_userInfo[msg.sender] = Types.UserDetail(
+        s_userInfo[user] = Types.UserDetail(
             _name,
             _father_name,
             _mother_name,
@@ -141,86 +146,92 @@ contract KYC is IKYC {
         return s_hashedData[walletAddress];
     }
 
-    function requestForApproval(
-        address walletAddress,
-        address thirdParty,
-        string memory data
-    ) external override {
-        IOxAuth(oxAuthAddress).requestApprove(walletAddress, thirdParty, data);
-    }
+    // function requestForApproval(
+    //     address walletAddress,
+    //     address thirdParty,
+    //     string memory data
+    // ) external override {
+    //     IOxAuth(oxAuthAddress).requestApprove(walletAddress, thirdParty, data);
+    // }
 
-    function grantTheRequest(
-        address approver,
-        address thirdParty,
-        string memory data
-    ) external override {
-        IOxAuth(oxAuthAddress).grantAccess(approver, thirdParty, data);
-    }
+    // function grantTheRequest(
+    //     address approver,
+    //     address thirdParty,
+    //     string memory data
+    // ) external override {
+    //     IOxAuth(oxAuthAddress).grantAccess(approver, thirdParty, data);
+    // }
 
-    // still remaining
+    // // still remaining
     function displayData(
         address walletAddress,
         address thirdParty,
         string memory data
-    ) external override returns (string memory userData) {
-        if (!IOxAuth(oxAuthAddress).viewData(walletAddress, thirdParty, data)) {
-            revert KYC__CannotViewData();
-        }
+    ) public view override returns (string memory userData) {
+        bool success = oxAuth.viewData(walletAddress, thirdParty, data);
+        require(success);
         if (keccak256(abi.encode("name")) == keccak256(abi.encode(data))) {
             userData = s_userInfo[walletAddress].name;
-        }
-        if (
+        } else if (
             keccak256(abi.encode("father_name")) == keccak256(abi.encode(data))
         ) {
             userData = s_userInfo[walletAddress].father_name;
-        }
-        if (
+        } else if (
             keccak256(abi.encode("mother_name")) == keccak256(abi.encode(data))
         ) {
             userData = s_userInfo[walletAddress].mother_name;
-        }
-        if (
+        } else if (
             keccak256(abi.encode("grandFather_name")) ==
             keccak256(abi.encode(data))
         ) {
             userData = s_userInfo[walletAddress].grandFather_name;
-        }
-        if (
+        } else if (
             keccak256(abi.encode("phone_number")) == keccak256(abi.encode(data))
         ) {
             userData = s_userInfo[walletAddress].phone_number;
-        }
-        if (keccak256(abi.encode("dob")) == keccak256(abi.encode(data))) {
+        } else if (
+            keccak256(abi.encode("dob")) == keccak256(abi.encode(data))
+        ) {
             userData = s_userInfo[walletAddress].dob;
-        }
-        if (
+        } else if (
             keccak256(abi.encode("blood_group")) == keccak256(abi.encode(data))
         ) {
             userData = s_userInfo[walletAddress].blood_group;
-        }
-        if (
+        } else if (
             keccak256(abi.encode("citizenship_number")) ==
             keccak256(abi.encode(data))
         ) {
             userData = s_userInfo[walletAddress].citizenship_number;
-        }
-        if (
+        } else if (
             keccak256(abi.encode("pan_number")) == keccak256(abi.encode(data))
         ) {
             userData = s_userInfo[walletAddress].pan_number;
-        }
-        if (keccak256(abi.encode("location")) == keccak256(abi.encode(data))) {
+        } else if (
+            keccak256(abi.encode("location")) == keccak256(abi.encode(data))
+        ) {
             userData = s_userInfo[walletAddress].location;
         } else {
             revert KYC__DataDoesNotExist();
         }
     }
 
-    function revokeApprove(
+    function gettheData(
         address walletAddress,
         address thirdParty,
         string memory data
-    ) external override {
-        IOxAuth(oxAuthAddress).revokeGrant(walletAddress, thirdParty, data);
+    ) public view returns (string memory userData) {
+        if (!oxAuth.viewData(walletAddress, thirdParty, data)) {
+            revert KYC__CannotViewData();
+        } else {
+            userData = s_userInfo[walletAddress].name;
+        }
     }
+
+    // function revokeApprove(
+    //     address walletAddress,
+    //     address thirdParty,
+    //     string memory data
+    // ) external override {
+    //     IOxAuth(oxAuthAddress).revokeGrant(walletAddress, thirdParty, data);
+    // }
 }

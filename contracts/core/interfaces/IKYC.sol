@@ -6,6 +6,7 @@ import "../libraries/Types.sol";
 
 interface IKYC {
     function getUserData(
+        address user,
         string memory _name,
         string memory _father_name,
         string memory _mother_name,
@@ -25,17 +26,17 @@ interface IKYC {
 
     function generateHash(address walletAddress) external returns (bytes32);
 
-    function requestForApproval(
-        address walletAddress,
-        address thirdParty,
-        string memory data
-    ) external;
+    // function requestForApproval(
+    //     address walletAddress,
+    //     address thirdParty,
+    //     string memory data
+    // ) external;
 
-    function grantTheRequest(
-        address approver,
-        address thirdParty,
-        string memory data
-    ) external;
+    // function grantTheRequest(
+    //     address approver,
+    //     address thirdParty,
+    //     string memory data
+    // ) external;
 
     function displayData(
         address walletAddress,
@@ -43,9 +44,9 @@ interface IKYC {
         string memory data
     ) external returns (string memory);
 
-    function revokeApprove(
-        address wallletAddress,
-        address thirdParty,
-        string memory data
-    ) external;
+    // function revokeApprove(
+    //     address wallletAddress,
+    //     address thirdParty,
+    //     string memory data
+    // ) external;
 }
