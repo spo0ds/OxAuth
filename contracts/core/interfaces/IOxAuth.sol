@@ -21,21 +21,21 @@ interface IOxAuth {
         string data
     );
 
-    function requestApprove(
-        address walletAddress,
-        address thirdParty,
+    function requestApproveFromDataProvider(
+        address dataRequester,
+        address dataProvider,
         string memory data
     ) external;
 
-    function grantAccess(
-        address approver,
-        address thirdParty,
+    function grantAccessToRequester(
+        address dataProvider,
+        address dataRequester,
         string memory data
     ) external;
 
-    function viewData(
-        address walletAddress,
-        address thirdParty,
+    function approveCondition(
+        address dataRequester,
+        address dataProvider,
         string memory data
     ) external returns (bool);
 

@@ -48,54 +48,45 @@ contract OxAuth is IOxAuth {
         _;
     }
 
-    // modifier onlyAtTime(address walletAddress, string memory data) {
-    //     if (
-    //         block.timestamp >
-    //         _StartingTimeInterval[walletAddress][msg.sender][data]
-    //     ) {
-    //         _Approve[walletAddress][msg.sender][data] = false;
-    //         revert OxAuth__TimeFinishedToView();
-    //     }
-    //     _;
-    // }
-
-    function requestApprove(
-        address walletAddress,
-        address thirdParty,
+    function requestApproveFromDataProvider(
+        address dataRequester,
+        address dataProvider,
         string memory data
     ) external override onlyOnce {
-        _ApproveStatus[thirdParty] = Status.Asked;
-        _RequestedData[thirdParty][walletAddress] = data;
-        emit ApproveRequest(thirdParty, walletAddress, data);
+        _ApproveStatus[dataProvider] = Status.Asked;
+        _RequestedData[dataProvider][dataRequester] = data;
+        emit ApproveRequest(dataProvider, dataRequester, data);
     }
 
-    function grantAccess(
-        address approver,
-        address thirdParty,
+    function grantAccessToRequester(
+        address dataProvider,
+        address dataRequester,
         string memory data
-    ) external override /* onlyOnce*/ onlyRequestedAccount(thirdParty, data) {
-        _Approve[approver][thirdParty][data] = true;
-        _StartingTimeInterval[approver][thirdParty][data] = block.timestamp;
-        emit AccessGrant(approver, thirdParty, data);
+    )
+        external
+        override
+        /* onlyOnce*/ onlyRequestedAccount(dataRequester, data)
+    {
+        _Approve[dataProvider][dataRequester][data] = true;
+        _StartingTimeInterval[dataProvider][dataRequester][data] = block
+            .timestamp;
+        emit AccessGrant(dataProvider, dataRequester, data);
     }
 
-    function viewData(
-        address walletAddress,
-        address thirdParty,
+    function approveCondition(
+        address dataRequester,
+        address dataProvider,
         string memory data /*onlyAtTime(walletAddress, data)*/
     ) external view override returns (bool) {
-        if (_Approve[thirdParty][walletAddress][data] == false) {
-            revert OxAuth__NotApprovedToView();
-        }
-        return true;
+        return _Approve[dataProvider][dataRequester][data];
     }
 
     function revokeGrant(
-        address walletAddress,
-        address thirdParty,
+        address dataProvider,
+        address dataRequester,
         string memory data
-    ) external override onlyRequestedAccount(walletAddress, data) {
-        _Approve[walletAddress][thirdParty][data] = false;
-        emit GrantRevoke(walletAddress, thirdParty, data);
+    ) external override onlyRequestedAccount(dataProvider, data) {
+        _Approve[dataProvider][dataRequester][data] = false;
+        emit GrantRevoke(dataProvider, dataRequester, data);
     }
 }

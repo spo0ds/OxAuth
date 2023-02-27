@@ -12,16 +12,11 @@ error KYC__INVALIDSignatureLength();
 error KYC__CannotViewData();
 error KYC__DataDoesNotExist();
 
-contract KYC is IKYC, OxAuth, NtNft {
+contract KYC is IKYC, OxAuth {
     mapping(address => Types.UserDetail) private s_userInfo;
     mapping(address => bytes32) private s_hashedData;
 
-    // address private immutable oxAuthAddress;
     OxAuth oxAuth;
-
-    // constructor(address _oxAuthAddress) {
-    //     oxAuthAddress = _oxAuthAddress;
-    // }
 
     function setUserData(
         string memory _name,
@@ -51,9 +46,9 @@ contract KYC is IKYC, OxAuth, NtNft {
     }
 
     function getMessageHash(
-        address walletAddress
+        address dataProviderAddress
     ) private view returns (bytes32) {
-        Types.UserDetail memory userData = s_userInfo[walletAddress];
+        Types.UserDetail memory userData = s_userInfo[dataProviderAddress];
         return
             keccak256(
                 abi.encodePacked(
@@ -71,43 +66,41 @@ contract KYC is IKYC, OxAuth, NtNft {
     }
 
     function getEthSignedMessageHash(
-        address walletAddress
+        address dataProviderAddress
     ) private returns (bytes32) {
         /*
         Signature is produced by signing a keccak256 hash with the following format:
         "\x19Ethereum Signed Message\n" + len(msg) + msg
         */
-        // return
-        //     s_hashedData[walletAddress] = keccak256(
-        //         abi.encodePacked(
-        //             "\x19Ethereum Signed Message:\n32",
-        //             getMessageHash(walletAddress)
-        //         )
-        //     );
         bytes32 data = keccak256(
             abi.encodePacked(
                 "\x19Ethereum Signed Message:\n32",
-                getMessageHash(walletAddress)
+                getMessageHash(dataProviderAddress)
             )
         );
-        s_hashedData[walletAddress] = data;
+        s_hashedData[dataProviderAddress] = data;
 
         return data;
     }
 
     function generateHash(
-        address walletAddress
+        address dataProviderAddress
     ) external override returns (bytes32) {
-        return getEthSignedMessageHash(walletAddress);
+        return getEthSignedMessageHash(dataProviderAddress);
     }
 
     function verify(
-        address walletAddress,
+        address dataProviderAddress,
         bytes memory signature
     ) external override returns (bool) {
-        bytes32 ethSignedMessageHash = getEthSignedMessageHash(walletAddress);
-        if (recoverSigner(ethSignedMessageHash, signature) == walletAddress) {
-            return s_userInfo[walletAddress].isVerified = true;
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(
+            dataProviderAddress
+        );
+        if (
+            recoverSigner(ethSignedMessageHash, signature) ==
+            dataProviderAddress
+        ) {
+            return s_userInfo[dataProviderAddress].isVerified = true;
         } else {
             return false;
         }
@@ -150,97 +143,8 @@ contract KYC is IKYC, OxAuth, NtNft {
     }
 
     function getEthHashedData(
-        address walletAddress
+        address dataProviderAddress
     ) external view returns (bytes32) {
-        return s_hashedData[walletAddress];
+        return s_hashedData[dataProviderAddress];
     }
-
-    // function requestForApproval(
-    //     address walletAddress,
-    //     address thirdParty,
-    //     string memory data
-    // ) external override {
-    //     IOxAuth(oxAuthAddress).requestApprove(walletAddress, thirdParty, data);
-    // }
-
-    // function grantTheRequest(
-    //     address approver,
-    //     address thirdParty,
-    //     string memory data
-    // ) external override {
-    //     IOxAuth(oxAuthAddress).grantAccess(approver, thirdParty, data);
-    // }
-
-    // // still remaining
-    function displayData(
-        address walletAddress,
-        address thirdParty,
-        string memory data
-    ) public view override returns (string memory userData) {
-        bool success = oxAuth.viewData(walletAddress, thirdParty, data);
-        require(success);
-        if (keccak256(abi.encode("name")) == keccak256(abi.encode(data))) {
-            userData = s_userInfo[walletAddress].name;
-        } else if (
-            keccak256(abi.encode("father_name")) == keccak256(abi.encode(data))
-        ) {
-            userData = s_userInfo[walletAddress].father_name;
-        } else if (
-            keccak256(abi.encode("mother_name")) == keccak256(abi.encode(data))
-        ) {
-            userData = s_userInfo[walletAddress].mother_name;
-        } else if (
-            keccak256(abi.encode("grandFather_name")) ==
-            keccak256(abi.encode(data))
-        ) {
-            userData = s_userInfo[walletAddress].grandFather_name;
-        } else if (
-            keccak256(abi.encode("phone_number")) == keccak256(abi.encode(data))
-        ) {
-            userData = s_userInfo[walletAddress].phone_number;
-        } else if (
-            keccak256(abi.encode("dob")) == keccak256(abi.encode(data))
-        ) {
-            userData = s_userInfo[walletAddress].dob;
-        } else if (
-            keccak256(abi.encode("blood_group")) == keccak256(abi.encode(data))
-        ) {
-            userData = s_userInfo[walletAddress].blood_group;
-        } else if (
-            keccak256(abi.encode("citizenship_number")) ==
-            keccak256(abi.encode(data))
-        ) {
-            userData = s_userInfo[walletAddress].citizenship_number;
-        } else if (
-            keccak256(abi.encode("pan_number")) == keccak256(abi.encode(data))
-        ) {
-            userData = s_userInfo[walletAddress].pan_number;
-        } else if (
-            keccak256(abi.encode("location")) == keccak256(abi.encode(data))
-        ) {
-            userData = s_userInfo[walletAddress].location;
-        } else {
-            revert KYC__DataDoesNotExist();
-        }
-    }
-
-    function gettheData(
-        address walletAddress,
-        address thirdParty,
-        string memory data
-    ) public view returns (string memory userData) {
-        if (!oxAuth.viewData(walletAddress, thirdParty, data)) {
-            revert KYC__CannotViewData();
-        } else {
-            userData = s_userInfo[walletAddress].name;
-        }
-    }
-
-    // function revokeApprove(
-    //     address walletAddress,
-    //     address thirdParty,
-    //     string memory data
-    // ) external override {
-    //     IOxAuth(oxAuthAddress).revokeGrant(walletAddress, thirdParty, data);
-    // }
 }
