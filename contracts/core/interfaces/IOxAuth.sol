@@ -22,13 +22,11 @@ interface IOxAuth {
     );
 
     function requestApproveFromDataProvider(
-        address dataRequester,
         address dataProvider,
         string memory data
     ) external;
 
     function grantAccessToRequester(
-        address dataProvider,
         address dataRequester,
         string memory data
     ) external;
@@ -39,9 +37,9 @@ interface IOxAuth {
         string memory data
     ) external returns (bool);
 
-    function revokeGrant(
-        address walletAddress,
-        address thirdParty,
-        string memory data
-    ) external;
+    // function revokeGrant(
+    //     address walletAddress,
+    //     address thirdParty,
+    //     string memory data
+    // ) external;
 }

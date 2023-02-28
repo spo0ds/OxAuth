@@ -25,9 +25,8 @@ interface IKYC {
 
     function generateHash(address walletAddress) external returns (bytes32);
 
-    // function displayData(
-    //     address walletAddress,
-    //     address thirdParty,
-    //     string memory data
-    // ) external returns (string memory);
+    function getUserData(
+        address dataProvider,
+        string memory data
+    ) external returns (string memory);
 }

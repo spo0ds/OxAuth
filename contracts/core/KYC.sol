@@ -150,11 +150,10 @@ contract KYC is IKYC, OxAuth {
 
     function getUserData(
         address dataProvider,
-        address datarequester,
         string memory data
     ) external view returns (string memory) {
         require(
-            OxAuth._Approve[dataProvider][datarequester][data] == true,
+            OxAuth._Approve[dataProvider][msg.sender][data] == true,
             "not access yet"
         );
 
