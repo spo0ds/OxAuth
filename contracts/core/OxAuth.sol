@@ -90,9 +90,9 @@ contract OxAuth is IOxAuth {
                            onlyRequestedAccount
     //////////////////////////////////////////////////////////////////////////////*/
 
-    /// @notice requestApproveFromDataProvide helps to recieve the requestor
-    /// @param dataProvider who represent the address of data Provider that Data Requestor is requesting 
-    /// @param data shows the requested Kyc field data from data Requestor
+    /// @notice requestApproveFromDataProvide helps to recieve data ie kyc data from the data Provider
+    /// @param dataProvider who represent the address of data Provider who fill the KYC data 
+    /// @param data shows the requested Kyc data field that is requested by data Requestor
     function requestApproveFromDataProvider(
         address dataProvider,
         string memory data
