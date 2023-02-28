@@ -16,6 +16,11 @@ error KYC__INVALIDSignatureLength();
 error KYC__CannotViewData();
 error KYC__DataDoesNotExist();
 
+/// @title KYC Interaction 
+/// @author Spooderman
+/// @author daleon
+/// @notice KYC is place where user come and fill the kyc details and user can request to view other user's KYC 
+
 contract KYC is IKYC, OxAuth {
     /// @notice This mapped the user details according to their address
     mapping(address => Types.UserDetail) private s_userInfo;
@@ -315,7 +320,7 @@ contract KYC is IKYC, OxAuth {
                                Update the existing data 
     //////////////////////////////////////////////////////////////////////////////*/
 
-    /// @notice Update is function which provide the specific KYC data to user who request to See Details.
+    /// @notice UpdateKycDetails is function which updatee the specific KYC data .
     /// @param  Kycfield This represent the specific field of KYC form such as name, dob and so forth
     /// @param  data that need to be update 
 
