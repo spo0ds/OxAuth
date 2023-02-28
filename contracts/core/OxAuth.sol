@@ -2,91 +2,209 @@
 
 pragma solidity 0.8.17;
 
+import "./interfaces/IKYC.sol";
+import "./libraries/Types.sol";
 import "./interfaces/IOxAuth.sol";
+import "./NTNFT.sol";
+import "./OxAuth.sol";
 
-error OxAuth__OnlyOnceAllowed();
-error OxAuth__NotApprover();
-error OxAuth__NotApprovedToView();
-error OxAuth__TimeFinishedToView();
+error KYC__INVALIDSignatureLength();
+error KYC__CannotViewData();
+error KYC__DataDoesNotExist();
+
+contract KYC is IKYC, OxAuth {
+    mapping(address => Types.UserDetail) private s_userInfo;
+    mapping(address => bytes32) private s_hashedData;
 
 contract OxAuth is IOxAuth {
     mapping(address => mapping(address => mapping(string => bool)))
-        internal _Approve;
+        private _Approve;
 
-    enum Status {
-        notAsked,
-        Asked
+    function setUserData(
+        string memory _name,
+        string memory _father_name,
+        string memory _mother_name,
+        string memory _grandFather_name,
+        string memory _phone_number,
+        string memory _dob,
+        string memory _blood_group,
+        string memory _citizenship_number,
+        string memory _pan_number,
+        string memory _location
+    ) external {
+        s_userInfo[msg.sender] = Types.UserDetail(
+            _name,
+            _father_name,
+            _mother_name,
+            _grandFather_name,
+            _phone_number,
+            _dob,
+            _blood_group,
+            _citizenship_number,
+            _pan_number,
+            _location,
+            false
+        );
     }
 
-    enum dataStatus {
-        locked,
-        notLocked
-    }
-
-    mapping(address => Status) private _ApproveStatus;
-    mapping(address => mapping(address => string)) private _RequestedData;
-    mapping(address => mapping(string => dataStatus)) private _DataStatus;
-    mapping(address => mapping(string => uint)) private _RequestTimeInterval;
-    mapping(address => mapping(address => mapping(string => uint)))
-        private _StartingTimeInterval;
-
-    modifier onlyOnce() {
-        if (_ApproveStatus[msg.sender] == Status.Asked) {
-            revert OxAuth__OnlyOnceAllowed();
-        }
-        _;
-    }
-
-    modifier onlyRequestedAccount(address requestAddress, string memory data) {
-        if (
+    function getMessageHash(
+        address dataProviderAddress
+    ) private view returns (bytes32) {
+        Types.UserDetail memory userData = s_userInfo[dataProviderAddress];
+        return
             keccak256(
-                abi.encodePacked(_RequestedData[msg.sender][requestAddress])
-            ) == keccak256(abi.encode(data))
+                abi.encodePacked(
+                    userData.name,
+                    userData.father_name,
+                    userData.mother_name,
+                    userData.grandFather_name,
+                    userData.phone_number,
+                    userData.dob,
+                    userData.citizenship_number,
+                    userData.pan_number,
+                    userData.location
+                )
+            );
+    }
+
+    function getEthSignedMessageHash(
+        address dataProviderAddress
+    ) private returns (bytes32) {
+        /*
+        Signature is produced by signing a keccak256 hash with the following format:
+        "\x19Ethereum Signed Message\n" + len(msg) + msg
+        */
+        bytes32 data = keccak256(
+            abi.encodePacked(
+                "\x19Ethereum Signed Message:\n32",
+                getMessageHash(dataProviderAddress)
+            )
+        );
+        s_hashedData[dataProviderAddress] = data;
+
+        return data;
+    }
+
+    function generateHash(
+        address dataProviderAddress
+    ) external override returns (bytes32) {
+        return getEthSignedMessageHash(dataProviderAddress);
+    }
+
+    function verify(
+        address dataProviderAddress,
+        bytes memory signature
+    ) external override returns (bool) {
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(
+            dataProviderAddress
+        );
+        if (
+            recoverSigner(ethSignedMessageHash, signature) ==
+            dataProviderAddress
         ) {
-            revert OxAuth__NotApprover();
+            return s_userInfo[dataProviderAddress].isVerified = true;
+        } else {
+            return false;
         }
-        _;
     }
 
     function requestApproveFromDataProvider(
         address dataRequester,
         address dataProvider,
         string memory data
-    ) external {
+    ) external override onlyOnce {
         _ApproveStatus[dataProvider] = Status.Asked;
         _RequestedData[dataProvider][dataRequester] = data;
         emit ApproveRequest(dataProvider, dataRequester, data);
     }
 
-    function grantAccessToRequester(
-        address dataProvider,
-        address dataRequester,
-        string memory data
-    )
-        external
-        override
-        /* onlyOnce*/ onlyRequestedAccount(dataRequester, data)
-    {
-        _Approve[dataProvider][dataRequester][data] = true;
-        _StartingTimeInterval[dataProvider][dataRequester][data] = block
-            .timestamp;
-        emit AccessGrant(dataProvider, dataRequester, data);
+    function splitSignature(
+        bytes memory sig
+    ) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
+        // require(sig.length == 65, "invalid signature length");
+        if (sig.length != 65) {
+            revert KYC__INVALIDSignatureLength();
+        }
+
+        assembly {
+            /*
+            First 32 bytes stores the length of the signature
+            add(sig, 32) = pointer of sig + 32
+            effectively, skips first 32 bytes of signature
+            mload(p) loads next 32 bytes starting at the memory address p into memory
+            */
+
+            // first 32 bytes, after the length prefix
+            r := mload(add(sig, 32))
+            // second 32 bytes
+            s := mload(add(sig, 64))
+            // final byte (first byte of the next 32 bytes)
+            v := byte(0, mload(add(sig, 96)))
+        }
+
+        // implicitly return (r, s, v)
     }
 
-    function approveCondition(
-        address dataRequester,
-        address dataProvider,
-        string memory data /*onlyAtTime(walletAddress, data)*/
-    ) external view override returns (bool) {
-        return _Approve[dataProvider][dataRequester][data];
+    function getEthHashedData(
+        address dataProviderAddress
+    ) external view returns (bytes32) {
+        return s_hashedData[dataProviderAddress];
     }
 
-    function revokeGrant(
+    function getUserData(
         address dataProvider,
-        address dataRequester,
+        address datarequester,
         string memory data
-    ) external override onlyRequestedAccount(dataProvider, data) {
-        _Approve[dataProvider][dataRequester][data] = false;
-        emit GrantRevoke(dataProvider, dataRequester, data);
-    }
+    ) external view returns (string memory) {
+        require(OxAuth._Approve[dataProvider][datarequester][data] == true, "not access yet");
+
+        if (keccak256(abi.encode("name")) == keccak256(abi.encode(data))) {
+            return s_userInfo[dataProvider].name;
+        }
+        else if (
+            keccak256(abi.encode("father_name")) == keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].father_name;
+        }
+        else if (
+            keccak256(abi.encode("mother_name")) == keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].mother_name;
+        }
+        else if (
+            keccak256(abi.encode("grandFather_name")) ==
+            keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].grandFather_name;
+        }
+        else if (
+            keccak256(abi.encode("phone_number")) == keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].phone_number;
+        }
+        else if (keccak256(abi.encode("dob")) == keccak256(abi.encode(data))) {
+            return s_userInfo[dataProvider].dob;
+        }
+        else if (
+            keccak256(abi.encode("blood_group")) == keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].blood_group;
+        }
+        else if (
+            keccak256(abi.encode("citizenship_number")) ==
+            keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].citizenship_number;
+        }
+        else if (
+            keccak256(abi.encode("pan_number")) == keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].pan_number;
+        }
+        else if (keccak256(abi.encode("location")) == keccak256(abi.encode(data))) {
+            return s_userInfo[dataProvider].location;
+        } else {
+            revert KYC__DataDoesNotExist();
+        }
+}
 }
