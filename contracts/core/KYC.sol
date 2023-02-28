@@ -245,7 +245,7 @@ contract KYC is IKYC, OxAuth {
                                Get User Data 
     //////////////////////////////////////////////////////////////////////////////*/
 
-    /// @notice GEtUserDAta is function who provide the specific KYC datg to user who request to See Details.
+    /// @notice GEtUserDAta is function which provide the specific KYC datg to user who request to See Details.
     /// @param  dataProvider It is address where dataRequestor is requesting to view the data
     /// @param  data This represent the specific field of KYC form such as name, dob and so forth
     /// @retun return the string datatype of specific field of KYC from 
@@ -308,7 +308,16 @@ contract KYC is IKYC, OxAuth {
         } else {
             revert KYC__DataDoesNotExist();
         }
-}
+    }
+
+
+    /*///////////////////////////////////////////////////////////////////////////////
+                               Update the existing data 
+    //////////////////////////////////////////////////////////////////////////////*/
+
+    /// @notice Update is function which provide the specific KYC data to user who request to See Details.
+    /// @param  Kycfield This represent the specific field of KYC form such as name, dob and so forth
+    /// @param  data that need to be update 
 
     function updateKYCDetails(string memory kycField, string memory data) external{
         if (keccak256(abi.encode("name")) == keccak256(abi.encode(kycField))) {
