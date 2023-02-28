@@ -309,13 +309,10 @@ contract KYC is IKYC, OxAuth {
     //////////////////////////////////////////////////////////////////////////////*/
 
     /// @notice UpdateKycDetails is function which updatee the specific KYC data .
-<<<<<<< HEAD
     /// @param  kycField This represent the specific field of KYC form such as name, dob and so forth
     /// @param  data that need to be update
-=======
     /// @param  Kycfield This represent the specific field of KYC form such as name, dob and so forth
     /// @param  data that need to be update  
->>>>>>> 4056e80 (changes natspec in kyc and oxauth)
 
     function updateKYCDetails(
         string memory kycField,
