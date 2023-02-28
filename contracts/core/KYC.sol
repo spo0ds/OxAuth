@@ -147,4 +147,59 @@ contract KYC is IKYC, OxAuth {
     ) external view returns (bytes32) {
         return s_hashedData[dataProviderAddress];
     }
+
+    function getUserData(
+        address dataProvider,
+        address datarequester,
+        string memory data
+    ) external view returns (string memory) {
+        require(
+            OxAuth._Approve[dataProvider][datarequester][data] == true,
+            "not access yet"
+        );
+
+        if (keccak256(abi.encode("name")) == keccak256(abi.encode(data))) {
+            return s_userInfo[dataProvider].name;
+        } else if (
+            keccak256(abi.encode("father_name")) == keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].father_name;
+        } else if (
+            keccak256(abi.encode("mother_name")) == keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].mother_name;
+        } else if (
+            keccak256(abi.encode("grandFather_name")) ==
+            keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].grandFather_name;
+        } else if (
+            keccak256(abi.encode("phone_number")) == keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].phone_number;
+        } else if (
+            keccak256(abi.encode("dob")) == keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].dob;
+        } else if (
+            keccak256(abi.encode("blood_group")) == keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].blood_group;
+        } else if (
+            keccak256(abi.encode("citizenship_number")) ==
+            keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].citizenship_number;
+        } else if (
+            keccak256(abi.encode("pan_number")) == keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].pan_number;
+        } else if (
+            keccak256(abi.encode("location")) == keccak256(abi.encode(data))
+        ) {
+            return s_userInfo[dataProvider].location;
+        } else {
+            revert KYC__DataDoesNotExist();
+        }
+    }
 }

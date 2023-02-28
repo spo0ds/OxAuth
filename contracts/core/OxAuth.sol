@@ -11,7 +11,7 @@ error OxAuth__TimeFinishedToView();
 
 contract OxAuth is IOxAuth {
     mapping(address => mapping(address => mapping(string => bool)))
-        private _Approve;
+        internal _Approve;
 
     enum Status {
         notAsked,
@@ -52,7 +52,7 @@ contract OxAuth is IOxAuth {
         address dataRequester,
         address dataProvider,
         string memory data
-    ) external override onlyOnce {
+    ) external {
         _ApproveStatus[dataProvider] = Status.Asked;
         _RequestedData[dataProvider][dataRequester] = data;
         emit ApproveRequest(dataProvider, dataRequester, data);
