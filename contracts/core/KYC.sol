@@ -11,6 +11,7 @@ import "./OxAuth.sol";
 error KYC__INVALIDSignatureLength();
 error KYC__CannotViewData();
 error KYC__DataDoesNotExist();
+error KYC__FieldDoesNotExist();
 
 contract KYC is IKYC, OxAuth {
     mapping(address => Types.UserDetail) private s_userInfo;
@@ -152,53 +153,108 @@ contract KYC is IKYC, OxAuth {
         address dataProvider,
         string memory data
     ) external view returns (string memory) {
-        require(
-            OxAuth._Approve[dataProvider][msg.sender][data] == true,
-            "not access yet"
-        );
+        require((OxAuth._Approve[dataProvider][msg.sender][data] || msg.sender == dataProvider)==true, "not access yet");
 
         if (keccak256(abi.encode("name")) == keccak256(abi.encode(data))) {
             return s_userInfo[dataProvider].name;
-        } else if (
+        }
+        else if (
             keccak256(abi.encode("father_name")) == keccak256(abi.encode(data))
         ) {
             return s_userInfo[dataProvider].father_name;
-        } else if (
+        }
+        else if (
             keccak256(abi.encode("mother_name")) == keccak256(abi.encode(data))
         ) {
             return s_userInfo[dataProvider].mother_name;
-        } else if (
+        }
+        else if (
             keccak256(abi.encode("grandFather_name")) ==
             keccak256(abi.encode(data))
         ) {
             return s_userInfo[dataProvider].grandFather_name;
-        } else if (
+        }
+        else if (
             keccak256(abi.encode("phone_number")) == keccak256(abi.encode(data))
         ) {
             return s_userInfo[dataProvider].phone_number;
-        } else if (
-            keccak256(abi.encode("dob")) == keccak256(abi.encode(data))
-        ) {
+        }
+        else if (keccak256(abi.encode("dob")) == keccak256(abi.encode(data))) {
             return s_userInfo[dataProvider].dob;
-        } else if (
+        }
+        else if (
             keccak256(abi.encode("blood_group")) == keccak256(abi.encode(data))
         ) {
             return s_userInfo[dataProvider].blood_group;
-        } else if (
+        }
+        else if (
             keccak256(abi.encode("citizenship_number")) ==
             keccak256(abi.encode(data))
         ) {
             return s_userInfo[dataProvider].citizenship_number;
-        } else if (
+        }
+        else if (
             keccak256(abi.encode("pan_number")) == keccak256(abi.encode(data))
         ) {
             return s_userInfo[dataProvider].pan_number;
-        } else if (
-            keccak256(abi.encode("location")) == keccak256(abi.encode(data))
-        ) {
+        }
+        else if (keccak256(abi.encode("location")) == keccak256(abi.encode(data))) {
             return s_userInfo[dataProvider].location;
         } else {
             revert KYC__DataDoesNotExist();
+        }
+}
+
+    function updateKYCDetails(string memory kycField, string memory data) external{
+        if (keccak256(abi.encode("name")) == keccak256(abi.encode(kycField))) {
+            s_userInfo[msg.sender].name = data;
+        }
+        else if (
+            keccak256(abi.encode("father_name")) == keccak256(abi.encode(kycField))
+        ) {
+            s_userInfo[msg.sender].name = data;
+        }
+        else if (
+            keccak256(abi.encode("mother_name")) == keccak256(abi.encode(kycField))
+        ) {
+            s_userInfo[msg.sender].name = data;
+        }
+        else if (
+            keccak256(abi.encode("grandFather_name")) ==
+            keccak256(abi.encode(kycField))
+        ) {
+            s_userInfo[msg.sender].name = data;
+        }
+        else if (
+            keccak256(abi.encode("phone_number")) == keccak256(abi.encode(kycField))
+        ) {
+            s_userInfo[msg.sender].name = data;
+        }
+        else if (keccak256(abi.encode("dob")) == keccak256(abi.encode(kycField))) {
+            s_userInfo[msg.sender].name = data;
+        }
+        else if (
+            keccak256(abi.encode("blood_group")) == keccak256(abi.encode(kycField))
+        ) {
+            s_userInfo[msg.sender].name = data;
+        }
+        else if (
+            keccak256(abi.encode("citizenship_number")) ==
+            keccak256(abi.encode(kycField))
+        ) {
+            s_userInfo[msg.sender].name = data;
+
+        }
+        else if (
+            keccak256(abi.encode("pan_number")) == keccak256(abi.encode(kycField))
+        ) {
+            s_userInfo[msg.sender].name = data;
+        }
+        else if (keccak256(abi.encode("location")) == keccak256(abi.encode(kycField))) {
+            s_userInfo[msg.sender].name = data;
+        }
+        else{
+            revert KYC__FieldDoesNotExist();
         }
     }
 }
