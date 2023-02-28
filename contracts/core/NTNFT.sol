@@ -6,10 +6,9 @@ import "./interfaces/INTNFT.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-error NtNft__NftNotTransferrable();
-error NtNft__NotOwnerToBurn();
+error NTNFT__NftNotTransferrable();
 
-contract NtNft is INTNFT, ERC721 {
+contract NTNFT is INTNFT, ERC721 {
     string private constant _TOKEN_URI =
         "https://ipfs.io/ipfs/Qmcx9T9WYxU2wLuk5bptJVwqjtxQPL8SxjgUkoEaDqWzti?filename=BasicNFT.png";
     uint256 private s_tokenCounter;
@@ -50,7 +49,7 @@ contract NtNft is INTNFT, ERC721 {
 
     function burn(uint tokenId) external override {
         if (ownerOf(tokenId) != msg.sender) {
-            revert NtNft__NotOwnerToBurn();
+            revert NTNFT__NftNotTransferrable();
         }
         _burn(tokenId);
     }
@@ -78,32 +77,32 @@ contract NtNft is INTNFT, ERC721 {
         uint256,
         bytes memory
     ) public pure override {
-        revert NtNft__NftNotTransferrable();
+        revert NTNFT__NftNotTransferrable();
     }
 
     /// @notice Function disabled as cannot transfer a soulbound nft
     function safeTransferFrom(address, address, uint256) public pure override {
-        revert NtNft__NftNotTransferrable();
+        revert NTNFT__NftNotTransferrable();
     }
 
     /// @notice Function disabled as cannot transfer a soulbound nft
     function transferFrom(address, address, uint256) public pure override {
-        revert NtNft__NftNotTransferrable();
+        revert NTNFT__NftNotTransferrable();
     }
 
     /// @notice Function disabled as cannot transfer a soulbound nft
     function approve(address, uint256) public pure override {
-        revert NtNft__NftNotTransferrable();
+        revert NTNFT__NftNotTransferrable();
     }
 
     /// @notice Function disabled as cannot transfer a soulbound nft
     function setApprovalForAll(address, bool) public pure override {
-        revert NtNft__NftNotTransferrable();
+        revert NTNFT__NftNotTransferrable();
     }
 
     /// @notice Function disabled as cannot transfer a soulbound nft
     function getApproved(uint256) public pure override returns (address) {
-        revert NtNft__NftNotTransferrable();
+        revert NTNFT__NftNotTransferrable();
     }
 
     /// @notice Function disabled as cannot transfer a soulbound nft
@@ -111,6 +110,6 @@ contract NtNft is INTNFT, ERC721 {
         address,
         address
     ) public pure override returns (bool) {
-        revert NtNft__NftNotTransferrable();
+        revert NTNFT__NftNotTransferrable();
     }
 }
