@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 error NtNft__NftNotTransferrable();
 error NtNft__NotOwnerToBurn();
 
-contract NtNft is INTNFT, ERC721, Ownable {
+contract NtNft is INTNFT, ERC721 {
     string private constant _TOKEN_URI =
         "https://ipfs.io/ipfs/Qmcx9T9WYxU2wLuk5bptJVwqjtxQPL8SxjgUkoEaDqWzti?filename=BasicNFT.png";
     uint256 private s_tokenCounter;
@@ -24,29 +24,29 @@ contract NtNft is INTNFT, ERC721, Ownable {
         return s_tokenCounter;
     }
 
-    // function _beforeTokenTransfer(
+    // // function _beforeTokenTransfer(
+    // //     address from,
+    // //     address to,
+    // //     uint256 /*tokenId*/,
+    // //     uint256 /*batchSize*/
+    // // ) internal pure override {
+    // //     if (from != address(0) || to != address(0)) {
+    // //         revert NtNft__NftNotTransferrable();
+    // //     }
+    // // }
+
+    // function _afterTokenTransfer(
     //     address from,
     //     address to,
-    //     uint256 /*tokenId*/,
+    //     uint256 tokenId,
     //     uint256 /*batchSize*/
-    // ) internal pure override {
-    //     if (from != address(0) || to != address(0)) {
-    //         revert NtNft__NftNotTransferrable();
+    // ) internal override {
+    //     if (from == address(0)) {
+    //         emit Attest(to, tokenId);
+    //     } else if (to == address(0)) {
+    //         emit Revoke(to, tokenId);
     //     }
     // }
-
-    function _afterTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId,
-        uint256 /*batchSize*/
-    ) internal override {
-        if (from == address(0)) {
-            emit Attest(to, tokenId);
-        } else if (to == address(0)) {
-            emit Revoke(to, tokenId);
-        }
-    }
 
     function burn(uint tokenId) external override {
         if (ownerOf(tokenId) != msg.sender) {
@@ -67,5 +67,50 @@ contract NtNft is INTNFT, ERC721, Ownable {
 
     function getTokenCounter() external view returns (uint) {
         return s_tokenCounter;
+    }
+
+    /// --- Disabling Transfer Of Soulbound NFT --- ///
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function safeTransferFrom(
+        address,
+        address,
+        uint256,
+        bytes memory
+    ) public pure override {
+        revert NtNft__NftNotTransferrable();
+    }
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function safeTransferFrom(address, address, uint256) public pure override {
+        revert NtNft__NftNotTransferrable();
+    }
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function transferFrom(address, address, uint256) public pure override {
+        revert NtNft__NftNotTransferrable();
+    }
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function approve(address, uint256) public pure override {
+        revert NtNft__NftNotTransferrable();
+    }
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function setApprovalForAll(address, bool) public pure override {
+        revert NtNft__NftNotTransferrable();
+    }
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function getApproved(uint256) public pure override returns (address) {
+        revert NtNft__NftNotTransferrable();
+    }
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function isApprovedForAll(
+        address,
+        address
+    ) public pure override returns (bool) {
+        revert NtNft__NftNotTransferrable();
     }
 }
