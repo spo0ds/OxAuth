@@ -194,7 +194,7 @@ contract KYC is IKYC, OxAuth {
     }
 
     /*///////////////////////////////////////////////////////////////////////////////
-                               Signature SPLIT
+                              RECOVER Signer 
     //////////////////////////////////////////////////////////////////////////////*/
 
     /// @notice splitSignature is used to extract `r`, `s` and `v` values from a signature passed as byte array
@@ -228,7 +228,7 @@ contract KYC is IKYC, OxAuth {
     }
 
     /*///////////////////////////////////////////////////////////////////////////////
-                             Getting Eth Hashed Data 
+                              RECOVER Signer 
     //////////////////////////////////////////////////////////////////////////////*/
 
     /// @notice getEthhashedData is getter function which react the hashData from storage variable who is mapped through address
@@ -311,8 +311,6 @@ contract KYC is IKYC, OxAuth {
     /// @notice UpdateKycDetails is function which updatee the specific KYC data .
     /// @param  kycField This represent the specific field of KYC form such as name, dob and so forth
     /// @param  data that need to be update
-    /// @param  Kycfield This represent the specific field of KYC form such as name, dob and so forth
-    /// @param  data that need to be update  
 
     function updateKYCDetails(
         string memory kycField,
