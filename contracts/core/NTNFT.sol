@@ -7,18 +7,29 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 error NTNFT__NftNotTransferrable();
+error NTNFT__CanOnlyMintOnce();
 
 contract NTNFT is INTNFT, ERC721 {
     string private constant _TOKEN_URI =
         "https://ipfs.io/ipfs/Qmcx9T9WYxU2wLuk5bptJVwqjtxQPL8SxjgUkoEaDqWzti?filename=BasicNFT.png";
     uint256 private s_tokenCounter;
 
+    mapping(address => bool) private _minter;
+
     constructor() ERC721("OxAuth", "Ox") {
         s_tokenCounter = 0;
     }
 
-    function mintNft(address minter) external override returns (uint256) {
-        _safeMint(minter, s_tokenCounter);
+    modifier onlyOnceMint() {
+        if (_minter[msg.sender]){
+            revert NTNFT__CanOnlyMintOnce();
+        }
+        _;
+    }
+
+    function mintNft() external override onlyOnceMint returns (uint256) {
+        _safeMint(msg.sender, s_tokenCounter);
+        _minter[msg.sender] = true;
         s_tokenCounter++;
         return s_tokenCounter;
     }
@@ -51,6 +62,7 @@ contract NTNFT is INTNFT, ERC721 {
         if (ownerOf(tokenId) != msg.sender) {
             revert NTNFT__NftNotTransferrable();
         }
+        _minter[msg.sender] = false;
         _burn(tokenId);
     }
 
