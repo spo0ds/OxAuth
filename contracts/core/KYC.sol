@@ -5,7 +5,6 @@ pragma solidity 0.8.17;
 import {IKYC} from "./interfaces/IKYC.sol";
 import {Types} from "./libraries/Types.sol";
 import {IOxAuth} from "./interfaces/IOxAuth.sol";
-import {NTNFT} from "./NTNFT.sol";
 import {OxAuth} from "./OxAuth.sol";
 
 /*///////////////////////////////////////////////////////////////////////////////
