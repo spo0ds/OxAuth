@@ -193,7 +193,7 @@ contract KYC is IKYC, OxAuth {
     }
 
     /*///////////////////////////////////////////////////////////////////////////////
-                              RECOVER Signer 
+                              splitSignature
     //////////////////////////////////////////////////////////////////////////////*/
 
     /// @notice splitSignature is used to extract `r`, `s` and `v` values from a signature passed as byte array
@@ -227,7 +227,7 @@ contract KYC is IKYC, OxAuth {
     }
 
     /*///////////////////////////////////////////////////////////////////////////////
-                              RECOVER Signer 
+                              getEthHashedData 
     //////////////////////////////////////////////////////////////////////////////*/
 
     /// @notice getEthhashedData is getter function which react the hashData from storage variable who is mapped through address

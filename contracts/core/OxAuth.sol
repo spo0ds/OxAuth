@@ -82,7 +82,7 @@ contract OxAuth is IOxAuth {
     }
 
     /*///////////////////////////////////////////////////////////////////////////////
-                           onlyRequestedAccount
+                           requestApproveFromDataProvider
     //////////////////////////////////////////////////////////////////////////////*/
 
     /// @notice requestApproveFromDataProvide helps to recieve data ie kyc data from the data Provider
@@ -124,7 +124,7 @@ contract OxAuth is IOxAuth {
     }
 
     /*///////////////////////////////////////////////////////////////////////////////
-                           grantAccessToRequestor
+                           approveCondition
     ///////////////////////////////////////////////////////////////////////////////*/
 
     /// @notice approveCondition is just a getter function to receieve whether it is approved or not
