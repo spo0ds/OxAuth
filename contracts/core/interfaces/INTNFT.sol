@@ -19,4 +19,6 @@ interface INTNFT {
 
     /// @notice gets the tokenCounter.
     function getTokenCounter() external view returns (uint);
+
+    function hasMinted(address minter) external view returns (bool);
 }

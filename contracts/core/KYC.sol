@@ -6,6 +6,7 @@ import {IKYC} from "./interfaces/IKYC.sol";
 import {Types} from "./libraries/Types.sol";
 import {IOxAuth} from "./interfaces/IOxAuth.sol";
 import {OxAuth} from "./OxAuth.sol";
+import {INTNFT} from "./interfaces/INTNFT.sol";
 
 /*///////////////////////////////////////////////////////////////////////////////
                            CUSTOME ERROR 
@@ -15,6 +16,7 @@ error KYC__INVALIDSignatureLength();
 error KYC__CannotViewData();
 error KYC__DataDoesNotExist();
 error KYC__FieldDoesNotExist();
+error KYC__AddressHasNotMinted();
 
 /// @title KYC Interaction
 /// @author Spooderman
@@ -27,6 +29,19 @@ contract KYC is IKYC, OxAuth {
 
     /// @notice Mapped hased of User details to its address
     mapping(address => bytes32) private s_hashedData;
+
+    address private immutable nftAddress;
+
+    constructor(address _nftAddress) {
+        nftAddress = _nftAddress;
+    }
+
+    modifier onlyMinted() {
+        if (!INTNFT(nftAddress).hasMinted(msg.sender)) {
+            revert KYC__AddressHasNotMinted();
+        }
+        _;
+    }
 
     /*///////////////////////////////////////////////////////////////////////////////
                            SetUserDATA 
@@ -54,7 +69,7 @@ contract KYC is IKYC, OxAuth {
         string memory _citizenship_number,
         string memory _pan_number,
         string memory _location
-    ) external {
+    ) external onlyMinted {
         //mapped deployer address and provide their details
 
         s_userInfo[msg.sender] = Types.UserDetail(

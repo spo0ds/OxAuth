@@ -127,6 +127,11 @@ contract NTNFT is INTNFT, ERC721 {
         return s_tokenCounter;
     }
 
+    /// @notice returns whether an address has minted NFT or not
+    function hasMinted(address minter) external view returns (bool) {
+        return _minter[minter];
+    }
+
     /*///////////////////////////////////////////////////////////////////////////////
                            Transfers and Approve Functions
     ///////////////////////////////////////////////////////////////////////////////*/
