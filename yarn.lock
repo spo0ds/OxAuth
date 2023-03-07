@@ -5123,6 +5123,13 @@ https-proxy-agent@^5.0.0:
     agent-base "6"
     debug "4"
 
+hybrid-crypto-js@^0.2.4:
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/hybrid-crypto-js/-/hybrid-crypto-js-0.2.4.tgz#7e764a6c4c7542e84df368df9e84fd76ab7043a1"
+  integrity sha512-lm4iQn14rApw/7yLOnd9eZu8JaxD8+BB34bQaZY7faKiT78tVjxSwOabOPO2LSIS0QMANhjMXNLNUXyuAJwYXw==
+  dependencies:
+    node-forge "^0.8.5"
+
 iconv-lite@0.4.24:
   version "0.4.24"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.24.tgz#2022b4b25fbddc21d2f524974a474aafe733908b"
@@ -6688,6 +6695,11 @@ node-fetch@~1.7.1:
   dependencies:
     encoding "^0.1.11"
     is-stream "^1.0.1"
+
+node-forge@^0.8.5:
+  version "0.8.5"
+  resolved "https://registry.yarnpkg.com/node-forge/-/node-forge-0.8.5.tgz#57906f07614dc72762c84cef442f427c0e1b86ee"
+  integrity sha512-vFMQIWt+J/7FLNyKouZ9TazT74PRV3wgv9UT4cRjC8BffxFbKXkgIWR42URCPSnHm/QDz6BOlb2Q0U4+VQT67Q==
 
 node-gyp-build@^4.2.0, node-gyp-build@^4.3.0:
   version "4.6.0"

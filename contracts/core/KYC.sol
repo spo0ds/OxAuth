@@ -17,6 +17,7 @@ error KYC__CannotViewData();
 error KYC__DataDoesNotExist();
 error KYC__FieldDoesNotExist();
 error KYC__AddressHasNotMinted();
+error KYC__NotYetApprovedToEncryptWithPublicKey();
 
 /// @title KYC Interaction
 /// @author Spooderman
@@ -25,10 +26,15 @@ error KYC__AddressHasNotMinted();
 
 contract KYC is IKYC, OxAuth {
     /// @notice This mapped the user details according to their address
-    mapping(address => Types.UserDetail) private s_userInfo;
+    mapping(address => Types.UserDetail) private s_userEncryptedInfo;
 
     /// @notice Mapped hased of User details to its address
     mapping(address => bytes32) private s_hashedData;
+
+    mapping(address => mapping(address => mapping(string => string)))
+        private retievableData;
+
+    // mapping(address => Types.UserDetail) private s_retrieveInfo;
 
     address private immutable nftAddress;
 
@@ -72,7 +78,7 @@ contract KYC is IKYC, OxAuth {
     ) external onlyMinted {
         //mapped deployer address and provide their details
 
-        s_userInfo[msg.sender] = Types.UserDetail(
+        s_userEncryptedInfo[msg.sender] = Types.UserDetail(
             _name,
             _father_name,
             _mother_name,
@@ -99,7 +105,9 @@ contract KYC is IKYC, OxAuth {
     ) private view returns (bytes32) {
         // access the struct datatypes from Types.UserDetail
 
-        Types.UserDetail memory userData = s_userInfo[dataProviderAddress];
+        Types.UserDetail memory userData = s_userEncryptedInfo[
+            dataProviderAddress
+        ];
 
         // perform keccak256 and produce the unique has of represent data
 
@@ -183,7 +191,7 @@ contract KYC is IKYC, OxAuth {
             recoverSigner(ethSignedMessageHash, signature) ==
             dataProviderAddress
         ) {
-            return s_userInfo[dataProviderAddress].isVerified = true;
+            return s_userEncryptedInfo[dataProviderAddress].isVerified = true;
         } else {
             return false;
         }
@@ -274,45 +282,45 @@ contract KYC is IKYC, OxAuth {
         );
 
         if (keccak256(abi.encode("name")) == keccak256(abi.encode(data))) {
-            return s_userInfo[dataProvider].name;
+            return s_userEncryptedInfo[dataProvider].name;
         } else if (
             keccak256(abi.encode("father_name")) == keccak256(abi.encode(data))
         ) {
-            return s_userInfo[dataProvider].father_name;
+            return s_userEncryptedInfo[dataProvider].father_name;
         } else if (
             keccak256(abi.encode("mother_name")) == keccak256(abi.encode(data))
         ) {
-            return s_userInfo[dataProvider].mother_name;
+            return s_userEncryptedInfo[dataProvider].mother_name;
         } else if (
             keccak256(abi.encode("grandFather_name")) ==
             keccak256(abi.encode(data))
         ) {
-            return s_userInfo[dataProvider].grandFather_name;
+            return s_userEncryptedInfo[dataProvider].grandFather_name;
         } else if (
             keccak256(abi.encode("phone_number")) == keccak256(abi.encode(data))
         ) {
-            return s_userInfo[dataProvider].phone_number;
+            return s_userEncryptedInfo[dataProvider].phone_number;
         } else if (
             keccak256(abi.encode("dob")) == keccak256(abi.encode(data))
         ) {
-            return s_userInfo[dataProvider].dob;
+            return s_userEncryptedInfo[dataProvider].dob;
         } else if (
             keccak256(abi.encode("blood_group")) == keccak256(abi.encode(data))
         ) {
-            return s_userInfo[dataProvider].blood_group;
+            return s_userEncryptedInfo[dataProvider].blood_group;
         } else if (
             keccak256(abi.encode("citizenship_number")) ==
             keccak256(abi.encode(data))
         ) {
-            return s_userInfo[dataProvider].citizenship_number;
+            return s_userEncryptedInfo[dataProvider].citizenship_number;
         } else if (
             keccak256(abi.encode("pan_number")) == keccak256(abi.encode(data))
         ) {
-            return s_userInfo[dataProvider].pan_number;
+            return s_userEncryptedInfo[dataProvider].pan_number;
         } else if (
             keccak256(abi.encode("location")) == keccak256(abi.encode(data))
         ) {
-            return s_userInfo[dataProvider].location;
+            return s_userEncryptedInfo[dataProvider].location;
         } else {
             revert KYC__DataDoesNotExist();
         }
@@ -331,52 +339,74 @@ contract KYC is IKYC, OxAuth {
         string memory data
     ) external {
         if (keccak256(abi.encode("name")) == keccak256(abi.encode(kycField))) {
-            s_userInfo[msg.sender].name = data;
+            s_userEncryptedInfo[msg.sender].name = data;
         } else if (
             keccak256(abi.encode("father_name")) ==
             keccak256(abi.encode(kycField))
         ) {
-            s_userInfo[msg.sender].name = data;
+            s_userEncryptedInfo[msg.sender].name = data;
         } else if (
             keccak256(abi.encode("mother_name")) ==
             keccak256(abi.encode(kycField))
         ) {
-            s_userInfo[msg.sender].name = data;
+            s_userEncryptedInfo[msg.sender].name = data;
         } else if (
             keccak256(abi.encode("grandFather_name")) ==
             keccak256(abi.encode(kycField))
         ) {
-            s_userInfo[msg.sender].name = data;
+            s_userEncryptedInfo[msg.sender].name = data;
         } else if (
             keccak256(abi.encode("phone_number")) ==
             keccak256(abi.encode(kycField))
         ) {
-            s_userInfo[msg.sender].name = data;
+            s_userEncryptedInfo[msg.sender].name = data;
         } else if (
             keccak256(abi.encode("dob")) == keccak256(abi.encode(kycField))
         ) {
-            s_userInfo[msg.sender].name = data;
+            s_userEncryptedInfo[msg.sender].name = data;
         } else if (
             keccak256(abi.encode("blood_group")) ==
             keccak256(abi.encode(kycField))
         ) {
-            s_userInfo[msg.sender].name = data;
+            s_userEncryptedInfo[msg.sender].name = data;
         } else if (
             keccak256(abi.encode("citizenship_number")) ==
             keccak256(abi.encode(kycField))
         ) {
-            s_userInfo[msg.sender].name = data;
+            s_userEncryptedInfo[msg.sender].name = data;
         } else if (
             keccak256(abi.encode("pan_number")) ==
             keccak256(abi.encode(kycField))
         ) {
-            s_userInfo[msg.sender].name = data;
+            s_userEncryptedInfo[msg.sender].name = data;
         } else if (
             keccak256(abi.encode("location")) == keccak256(abi.encode(kycField))
         ) {
-            s_userInfo[msg.sender].name = data;
+            s_userEncryptedInfo[msg.sender].name = data;
         } else {
             revert KYC__FieldDoesNotExist();
         }
+    }
+
+    function storeinRetrievable(
+        address dataRequester,
+        string memory kycField,
+        string memory data
+    ) external {
+        if (!OxAuth._Approve[msg.sender][dataRequester][kycField]) {
+            revert KYC__NotYetApprovedToEncryptWithPublicKey();
+        }
+        retievableData[msg.sender][dataRequester][kycField] = data;
+    }
+
+    function getUserDataFromRequester(
+        address dataProvider,
+        string memory kycField
+    ) external view returns (string memory) {
+        require(
+            OxAuth._Approve[dataProvider][msg.sender][kycField] == true,
+            "not access yet"
+        );
+        return retievableData[dataProvider][msg.sender][kycField];
     }
 }

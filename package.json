@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.2",
-    "crypto-js": "^4.1.1"
+    "crypto-js": "^4.1.1",
+    "hybrid-crypto-js": "^0.2.4"
   }
 }
