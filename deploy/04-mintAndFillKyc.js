@@ -1,6 +1,7 @@
 const { network, ethers } = require("hardhat")
 const { developmentChains } = require("../helper-hardhat-config")
 const { aes } = require("../utils/aes")
+const { rsa } = require("../utils/rsa")
 
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
@@ -58,6 +59,11 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     console.log("Requestor those who are granted can view the data");
     const approveGranted = await kycDeploy.connect(from1).getUserData(owner.address, "name");
     console.log(aes.decryptMessage(approveGranted, "hello"));
+
+    console.log("Store data by encrypting using a public key of the requester");
+    console.log(`From:${from1.address}`)
+    const storeTx = await kycDeploy.connect(owner).storeinRetrievable(from1.address, "name", rsa.encryptMessage("a", from1.address));
+    console.log(storeTx);
 
     console.log("============================================");
 }
