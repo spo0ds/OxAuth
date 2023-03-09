@@ -9,7 +9,6 @@ const aes = (function () {
         decryptMessage: function (encryptedMessage = '', secretkey = '') {
             var decryptedBytes = CryptoJS.AES.decrypt(encryptedMessage, secretkey);
             var decryptedMessage = decryptedBytes.toString(CryptoJS.enc.Utf8);
-
             return decryptedMessage;
         }
     }

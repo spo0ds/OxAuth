@@ -1,7 +1,8 @@
 const { network, ethers } = require("hardhat")
 const { developmentChains } = require("../helper-hardhat-config")
 const { aes } = require("../utils/aes")
-const { rsa } = require("../utils/rsa")
+const eccrypto = require("eccrypto")
+const kycContractABI = require("../artifacts/contracts/core/KYC.sol/KYC.json").abi;
 
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
@@ -54,16 +55,47 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
     console.log("..............................................");
 
-    // ** Those Requestor who get permission to view data can only view ** //
 
-    console.log("Requestor those who are granted can view the data");
-    const approveGranted = await kycDeploy.connect(from1).getUserData(owner.address, "name");
-    console.log(aes.decryptMessage(approveGranted, "hello"));
+    console.log("Owner view own data")
+    const approveGranted = await kycDeploy.connect(owner).getUserData(owner.address, "name")
+    console.log(aes.decryptMessage(approveGranted, "hello"))
 
-    console.log("Store data by encrypting using a public key of the requester");
-    console.log(`From:${from1.address}`)
-    const storeTx = await kycDeploy.connect(owner).storeinRetrievable(from1.address, "name", rsa.encryptMessage("a", from1.address));
+    var privateKeyB = Buffer.from(process.env.PRIVATE_KEY, 'hex');
+    console.log(privateKeyB)
+    var publicKeyB = eccrypto.getPublic(privateKeyB);
+    console.log(publicKeyB.toString('base64'));
+
+    // Encrypting the message for B.
+    const encryptedMessage = await eccrypto.encrypt(publicKeyB, Buffer.from("a"))
+    console.log(`Encrypted Message:${encryptedMessage.toString('hex')}`)
+
+    console.log("Store data by encrypting using a public key of the requester")
+    const storeTx = await kycDeploy.connect(owner).storeinRetrievable(from1.address, "name", encryptedMessage)
     console.log(storeTx);
 
-    console.log("============================================");
+    async function decrypt(privateKeyB, encryptedMessage) {
+        return await eccrypto.decrypt(privateKeyB, encryptedMessage).then(function (plaintext) {
+            return plaintext.toString();
+        })
+    }
+
+    console.log("Decrypting data using private key")
+    const RetrieveTx = await kycDeploy.connect(from1).getUserDataFromRequester(owner.address, "name")
+    console.log(await decrypt(privateKeyB, encryptedMessage));
+
+    console.log("============================================")
+
+    console.log("Getting the encrypted data and decrypting it")
+
+    const kycContractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+
+    // const provider = ethers.provider;
+    const kycContract = new ethers.Contract(kycContractAddress, kycContractABI);
+
+    const dataProviderAddress = owner;
+    const kycField = "name";
+    // const signer = provider.getSigner(from1.address);
+
+    const result = await kycContract.getUserDataFromRequester(dataProviderAddress, kycField, { from: from1 });;
+    console.log(await decrypt(privateKeyB, result));
 }

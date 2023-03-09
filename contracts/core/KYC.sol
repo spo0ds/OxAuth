@@ -18,6 +18,7 @@ error KYC__DataDoesNotExist();
 error KYC__FieldDoesNotExist();
 error KYC__AddressHasNotMinted();
 error KYC__NotYetApprovedToEncryptWithPublicKey();
+error KYC__NotOwner();
 
 /// @title KYC Interaction
 /// @author Spooderman
@@ -276,10 +277,13 @@ contract KYC is IKYC, OxAuth {
         address dataProvider,
         string memory data
     ) external view returns (string memory) {
-        require(
-            OxAuth._Approve[dataProvider][msg.sender][data] == true,
-            "not access yet"
-        );
+        // require(
+        //     OxAuth._Approve[dataProvider][msg.sender][data] == true,
+        //     "not access yet"
+        // );
+        if (dataProvider != msg.sender) {
+            revert KYC__NotOwner();
+        }
 
         if (keccak256(abi.encode("name")) == keccak256(abi.encode(data))) {
             return s_userEncryptedInfo[dataProvider].name;
