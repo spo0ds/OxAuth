@@ -19,6 +19,7 @@ error KYC__FieldDoesNotExist();
 error KYC__AddressHasNotMinted();
 error KYC__NotYetApprovedToEncryptWithPublicKey();
 error KYC__NotOwner();
+error KYC__NotYetApprovedToView();
 
 /// @title KYC Interaction
 /// @author Spooderman
@@ -76,7 +77,7 @@ contract KYC is IKYC, OxAuth {
         string memory _citizenship_number,
         string memory _pan_number,
         string memory _location
-    ) external onlyMinted {
+    ) external override onlyMinted {
         //mapped deployer address and provide their details
 
         s_userEncryptedInfo[msg.sender] = Types.UserDetail(
@@ -259,7 +260,7 @@ contract KYC is IKYC, OxAuth {
     /// @return messageDigest of KYC_details
     function getEthHashedData(
         address dataProviderAddress
-    ) external view returns (bytes32) {
+    ) external view override returns (bytes32) {
         return s_hashedData[dataProviderAddress];
     }
 
@@ -267,16 +268,16 @@ contract KYC is IKYC, OxAuth {
                                Get User Data 
     //////////////////////////////////////////////////////////////////////////////*/
 
-    /// @notice GEtUserDAta is function which provide the specific KYC datg to user who request to See Details.
+    /// @notice GEtUserDAta is function which decrypts the AES encrypted data.
     /// @param  dataProvider It is address where dataRequestor is requesting to view the data
     /// @param  data This represent the specific field of KYC form such as name, dob and so forth
     /// @retun return the string datatype of specific field of KYC from
 
     /// Requestor first need to get approved to view data
-    function getUserData(
+    function decryptMyData(
         address dataProvider,
         string memory data
-    ) external view returns (string memory) {
+    ) external view override returns (string memory) {
         // require(
         //     OxAuth._Approve[dataProvider][msg.sender][data] == true,
         //     "not access yet"
@@ -334,14 +335,14 @@ contract KYC is IKYC, OxAuth {
                                Update the existing data 
     //////////////////////////////////////////////////////////////////////////////*/
 
-    /// @notice UpdateKycDetails is function which updatee the specific KYC data .
+    /// @notice UpdateKycDetails is function which updatee the specific KYC data.
     /// @param  kycField This represent the specific field of KYC form such as name, dob and so forth
     /// @param  data that need to be update
 
     function updateKYCDetails(
         string memory kycField,
         string memory data
-    ) external {
+    ) external override {
         if (keccak256(abi.encode("name")) == keccak256(abi.encode(kycField))) {
             s_userEncryptedInfo[msg.sender].name = data;
         } else if (
@@ -392,25 +393,46 @@ contract KYC is IKYC, OxAuth {
         }
     }
 
-    function storeinRetrievable(
+    /*///////////////////////////////////////////////////////////////////////////////
+                               Storing the RSA encrypted data in the blockchain 
+    //////////////////////////////////////////////////////////////////////////////*/
+
+    /// @notice storeRsaEncryptedinRetrievable is function where data provider encrypts his/her data using requester's public key.
+    /// @param dataRequester represents the address of the requester.
+    /// @param  kycField This represent the specific field of KYC form such as name, dob and so forth
+    /// @param  data represents encrypted data.
+    function storeRsaEncryptedinRetrievable(
         address dataRequester,
         string memory kycField,
         string memory data
-    ) external {
+    ) external override {
+        // Checkes whether the data is approved or not
         if (!OxAuth._Approve[msg.sender][dataRequester][kycField]) {
             revert KYC__NotYetApprovedToEncryptWithPublicKey();
         }
+        // stores the encrypted data in the mapping.
         retievableData[msg.sender][dataRequester][kycField] = data;
     }
 
-    function getUserDataFromRequester(
+    /*///////////////////////////////////////////////////////////////////////////////
+                               Retrieving the Owner's data
+    //////////////////////////////////////////////////////////////////////////////*/
+
+    /// @notice getRequestedDataFromProvider is function where data requester decrypts data using his/her private key.
+    /// @param dataProvider represents the address of the data provider.
+    /// @param  kycField This represent the specific field of KYC form such as name, dob and so forth
+    function getRequestedDataFromProvider(
         address dataProvider,
         string memory kycField
-    ) external view returns (string memory) {
-        require(
-            OxAuth._Approve[dataProvider][msg.sender][kycField] == true,
-            "not access yet"
-        );
+    ) external view override onlyMinted returns (string memory) {
+        // require(
+        //     OxAuth._Approve[dataProvider][msg.sender][kycField] == true,
+        //     "not access yet"
+        // );
+        if (!OxAuth._Approve[dataProvider][msg.sender][kycField]) {
+            revert KYC__NotYetApprovedToView();
+        }
+        // returns the data
         return retievableData[dataProvider][msg.sender][kycField];
     }
 }

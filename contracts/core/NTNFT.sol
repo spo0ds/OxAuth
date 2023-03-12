@@ -61,9 +61,8 @@ contract NTNFT is INTNFT, ERC721 {
     /// @notice allows an address to mint an NFT.
 
     function mintNft() external override onlyOnceMint returns (uint256) {
-        _safeMint(msg.sender, s_tokenCounter);
+        _safeMint(msg.sender, s_tokenCounter++);
         _minter[msg.sender] = true;
-        s_tokenCounter++;
         return s_tokenCounter;
     }
 

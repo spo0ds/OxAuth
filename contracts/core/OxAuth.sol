@@ -91,7 +91,7 @@ contract OxAuth is IOxAuth {
     function requestApproveFromDataProvider(
         address dataProvider,
         string memory data
-    ) external {
+    ) external override {
         _RequestedData[dataProvider][msg.sender] = data;
         emit ApproveRequest(dataProvider, msg.sender, data);
     }
@@ -138,12 +138,18 @@ contract OxAuth is IOxAuth {
         return _Approve[dataProvider][dataRequester][data];
     }
 
-    // function revokeGrant(
-    //     address dataProvider,
-    //     address dataRequester,
-    //     string memory data
-    // ) external override onlyRequestedAccount(dataProvider, data) {
-    //     _Approve[dataProvider][dataRequester][data] = false;
-    //     emit GrantRevoke(dataProvider, dataRequester, data);
-    // }
+    /*///////////////////////////////////////////////////////////////////////////////
+                           revokeGrantToRequester
+    ///////////////////////////////////////////////////////////////////////////////*/
+
+    /// @notice revokeGrantToRequester is a function to revoke the right for the requester to view data.
+    /// @param dataRequester address of data Requester
+    /// @param kycField represent the Kyc data field that data provider wants to revoke
+    function revokeGrantToRequester(
+        address dataRequester,
+        string memory kycField
+    ) external override onlyRequestedAccount(msg.sender, kycField) {
+        _Approve[msg.sender][dataRequester][kycField] = false;
+        emit GrantRevoke(msg.sender, dataRequester, kycField);
+    }
 }

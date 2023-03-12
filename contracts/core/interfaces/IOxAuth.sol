@@ -18,11 +18,11 @@ interface IOxAuth {
         string indexed data
     );
 
-    // event GrantRevoke(
-    //     address indexed approver,
-    //     address indexed requester,
-    //     string data
-    // );
+    event GrantRevoke(
+        address indexed approver,
+        address indexed requester,
+        string data
+    );
 
     /// @notice requestApproveFromDataProvide helps to recieve data ie kyc data from the data Provider
     function requestApproveFromDataProvider(
@@ -43,9 +43,8 @@ interface IOxAuth {
         string memory data
     ) external returns (bool);
 
-    // function revokeGrant(
-    //     address walletAddress,
-    //     address thirdParty,
-    //     string memory data
-    // ) external;
+    function revokeGrantToRequester(
+        address dataRequester,
+        string memory kycField
+    ) external;
 }

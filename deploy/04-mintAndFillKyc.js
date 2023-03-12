@@ -33,9 +33,13 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const kycDeploy = await ethers.getContract("KYC", owner);
 
     // Minting the NFT with the owner because then only one can fill the KYC.
-    const nftMintTx = await nft.mintNft();
-    await nftMintTx.wait();
-    console.log(`NFT index 0 tokenURI: ${await nft.tokenURI(0)}`);
+    const ownerNftMintTx = await nft.connect(owner).mintNft();
+    await ownerNftMintTx.wait();
+    console.log(`NFT index ${nft.getTokenCounter()} tokenURI: ${await nft.tokenURI(0)}`);
+
+    const from1NftMintTx = await nft.connect(from1).mintNft();
+    await from1NftMintTx.wait();
+    console.log(`NFT index ${nft.getTokenCounter()} tokenURI: ${await nft.tokenURI(1)}`);
 
     // Filling the KYC details for the owner account.
     console.log("Setting user data...");
@@ -76,7 +80,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
     // Only Data Provider could view the data
     console.log("Owner views own data:");
-    console.log(aes.decryptMessage(await kycDeploy.getUserData(owner.address, "name"), "hello"));
+    console.log(aes.decryptMessage(await kycDeploy.decryptMyData(owner.address, "name"), "hello"));
 
     // Generate key pair for user1
     const user1Key = new NodeRSA({ b: 2048 });
@@ -86,12 +90,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     console.log(`Encrypted Data:${encryptedData.toString()}`)
 
     console.log("Store data by encrypting using a public key of the requester...");
-    const storeTx = await kycDeploy.connect(owner).storeinRetrievable(from1.address, "name", encryptedData);
+    const storeTx = await kycDeploy.connect(owner).storeRsaEncryptedinRetrievable(from1.address, "name", encryptedData);
     await storeTx.wait(1)
     console.log(storeTx)
 
     // Getting Data from Retrievable
-    const retrieveData = await kycDeploy.connect(from1).getUserDataFromRequester(owner.address, "name");
+    const retrieveData = await kycDeploy.connect(from1).getRequestedDataFromProvider(owner.address, "name");
     console.log(`Retirevable Data:${retrieveData}`)
     // console.log("Decrypting data using private key")
     const decryptedMessage = await decrypt(user1Key.exportKey("pkcs8-private"), retrieveData);

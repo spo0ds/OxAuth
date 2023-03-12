@@ -39,11 +39,4 @@ interface IRouter {
         address thirdParty,
         string memory data
     ) external;
-
-    function displayApprovedData(
-        address walletAddress,
-        string memory data
-    ) external returns (string memory);
-
-    function removeApprove(address thirdParty, string memory data) external;
 }
