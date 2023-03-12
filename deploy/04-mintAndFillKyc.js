@@ -1,101 +1,99 @@
-const { network, ethers } = require("hardhat")
-const { developmentChains } = require("../helper-hardhat-config")
-const { aes } = require("../utils/aes")
-const eccrypto = require("eccrypto")
+const { ethers } = require("hardhat");
+const { aes } = require("../utils/aes");
+const NodeRSA = require('node-rsa');
 const kycContractABI = require("../artifacts/contracts/core/KYC.sol/KYC.json").abi;
+require("dotenv").config();
 
+async function encrypt(key, message) {
+    const rsaKey = new NodeRSA();
+    rsaKey.importKey(key, "pkcs8-public");
+    return rsaKey.encrypt(message, "base64");
+}
+
+async function decrypt(key, encryptedMessage) {
+    const rsaKey = new NodeRSA();
+    rsaKey.importKey(key, "pkcs8-private");
+    return rsaKey.decrypt(encryptedMessage, "utf8");
+}
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
+    // Getting different accounts to test the functionality of the contracts
     const [owner, from1, from2, from3] = await ethers.getSigners();
 
-    const nft = await ethers.getContract("NTNFT", owner)
-    const nftMintTx = await nft.mintNft()
-    await nftMintTx.wait(1)
-    console.log(`NFT index 0 tokenURI: ${await nft.tokenURI(0)}`)
+    // // Send some Ether to the from1 account
+    // await owner.sendTransaction({
+    //     to: from1.address,
+    //     value: ethers.utils.parseEther("1.0") // Sending 1 Ether
+    // })
 
 
-    const kycDeploy = await ethers.getContract("KYC", owner)
+    // Getting the deployed NTNFT and KYC contracts.
+    // The owner account is the deployer of the both contracts.
+    const nft = await ethers.getContract("NTNFT", owner);
+    const kycDeploy = await ethers.getContract("KYC", owner);
 
-    console.log("setting user data.....");
-    const userData = await kycDeploy.setUserData(aes.encryptMessage("a", "hello"), aes.encryptMessage("b", "hello"), aes.encryptMessage("c", "hello"), aes.encryptMessage("d", "hello"), aes.encryptMessage("e", "hello"), aes.encryptMessage("f", "hello"), aes.encryptMessage("g", "hello"), aes.encryptMessage("h", "hello"), aes.encryptMessage("i", "hello"), aes.encryptMessage("j", "hello"));
-    console.log(userData)
+    // Minting the NFT with the owner because then only one can fill the KYC.
+    const nftMintTx = await nft.mintNft();
+    await nftMintTx.wait();
+    console.log(`NFT index 0 tokenURI: ${await nft.tokenURI(0)}`);
+
+    // Filling the KYC details for the owner account.
+    console.log("Setting user data...");
+    const userData = await kycDeploy.connect(owner).setUserData(
+        aes.encryptMessage("a", "hello"),
+        aes.encryptMessage("b", "hello"),
+        aes.encryptMessage("c", "hello"),
+        aes.encryptMessage("d", "hello"),
+        aes.encryptMessage("e", "hello"),
+        aes.encryptMessage("f", "hello"),
+        aes.encryptMessage("g", "hello"),
+        aes.encryptMessage("h", "hello"),
+        aes.encryptMessage("i", "hello"),
+        aes.encryptMessage("j", "hello")
+    );
+    console.log(userData);
+
+    // // *** Generate the KYC HASHED DATA ** // 
+    // console.log("Generating KYC hash......");
+    // const userDataHash = await kycDeploy.connect(owner).generateHash(owner.address);
+    // console.log(userDataHash);
 
 
-    // *** Generate the KYC HASHED DATA ** // 
-    console.log("Generating KYC hash......");
-    const userDataHash = await kycDeploy.connect(owner).generateHash(owner.address);
-    console.log(userDataHash);
+    // // ** GETTING USER DATA HASH **// 
+    // console.log("Getting User Hash Data");
+    // const getuserDataHash = await kycDeploy.connect(owner).getEthHashedData(owner.address);
+    // console.log(getuserDataHash);
 
-
-    // ** GETTING USER DATA HASH **// 
-    console.log("Getting User Hash Data");
-    const getuserDataHash = await kycDeploy.connect(owner).getEthHashedData(owner.address);
-    console.log(getuserDataHash);
-
-    console.log(" .................................");
-
+    // console.log(" .................................");
 
     // ** REQUESTING THE KYC FROM ANOTHER ADDRESS **//
 
-    console.log("Requesting the KYC DATA to view");
-    const rqst = await kycDeploy.connect(from1).requestApproveFromDataProvider(owner.address, "name");
-    console.log(rqst);
-    const receipt = await rqst.wait();
-    console.log("Receipt", receipt);
+    console.log("Requesting the KYC data to view...");
+    const [receipt, approveGranted] = await Promise.all([
+        kycDeploy.connect(from1).requestApproveFromDataProvider(owner.address, "name"),
+        kycDeploy.connect(owner).grantAccessToRequester(from1.address, "name")
+    ]);
 
+    // Only Data Provider could view the data
+    console.log("Owner views own data:");
+    console.log(aes.decryptMessage(await kycDeploy.getUserData(owner.address, "name"), "hello"));
 
-    console.log("...........................................");
-    // **Granting Access By owner who have signed KYC details *** //
-    // throw Gas limit error cause of ABi Code encode method and comparing
-    // need to optimize just by removing the abi.encode and hashing comparision solidity code
-    console.log("Granting the Requestor to view specific field from kyc ");
-    const approve = await kycDeploy.connect(owner).grantAccessToRequester(from1.address, "name");
-    await approve.wait();
-    console.log(approve);
+    // Generate key pair for user1
+    const user1Key = new NodeRSA({ b: 2048 });
 
-    console.log("..............................................");
+    // Using RSA to encrypt the data
+    const encryptedData = await encrypt(user1Key.exportKey("pkcs8-public"), "a");
+    console.log(`Encrypted Data:${encryptedData.toString()}`)
 
+    console.log("Store data by encrypting using a public key of the requester...");
+    const storeTx = await kycDeploy.connect(owner).storeinRetrievable(from1.address, "name", encryptedData);
+    await storeTx.wait(1)
+    console.log(storeTx)
 
-    console.log("Owner view own data")
-    const approveGranted = await kycDeploy.connect(owner).getUserData(owner.address, "name")
-    console.log(aes.decryptMessage(approveGranted, "hello"))
-
-    var privateKeyB = Buffer.from(process.env.PRIVATE_KEY, 'hex');
-    console.log(privateKeyB)
-    var publicKeyB = eccrypto.getPublic(privateKeyB);
-    console.log(publicKeyB.toString('base64'));
-
-    // Encrypting the message for B.
-    const encryptedMessage = await eccrypto.encrypt(publicKeyB, Buffer.from("a"))
-    console.log(`Encrypted Message:${encryptedMessage.toString('hex')}`)
-
-    console.log("Store data by encrypting using a public key of the requester")
-    const storeTx = await kycDeploy.connect(owner).storeinRetrievable(from1.address, "name", encryptedMessage)
-    console.log(storeTx);
-
-    async function decrypt(privateKeyB, encryptedMessage) {
-        return await eccrypto.decrypt(privateKeyB, encryptedMessage).then(function (plaintext) {
-            return plaintext.toString();
-        })
-    }
-
-    console.log("Decrypting data using private key")
-    const RetrieveTx = await kycDeploy.connect(from1).getUserDataFromRequester(owner.address, "name")
-    console.log(await decrypt(privateKeyB, encryptedMessage));
-
-    console.log("============================================")
-
-    console.log("Getting the encrypted data and decrypting it")
-
-    const kycContractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
-
-    // const provider = ethers.provider;
-    const kycContract = new ethers.Contract(kycContractAddress, kycContractABI);
-
-    const dataProviderAddress = owner;
-    const kycField = "name";
-    // const signer = provider.getSigner(from1.address);
-
-    const result = await kycContract.getUserDataFromRequester(dataProviderAddress, kycField, { from: from1 });;
-    console.log(await decrypt(privateKeyB, result));
-}
+    // Getting Data from Retrievable
+    const retrieveData = await kycDeploy.connect(from1).getUserDataFromRequester(owner.address, "name");
+    console.log(`Retirevable Data:${retrieveData}`)
+    // console.log("Decrypting data using private key")
+    const decryptedMessage = await decrypt(user1Key.exportKey("pkcs8-private"), retrieveData);
+    console.log(`Decrypted Message: ${decryptedMessage}`);
+};
