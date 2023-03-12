@@ -18,7 +18,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     })
 
     console.log("Deployed NFT!")
-    console.log(`NFT deployed at ${basicNft.address}`);
+    console.log(`NFT deployed at ${basicNft.address}`)
 
     if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
         log("Verifying...")

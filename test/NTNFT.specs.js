@@ -2,7 +2,6 @@ const { expect, assert } = require("chai")
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers")
 const { ethers } = require("hardhat")
 
-
 describe("NTNFT Contract", () => {
     let accounts, deployer, nft
 
@@ -12,7 +11,7 @@ describe("NTNFT Contract", () => {
         await nft.deployed()
 
         return {
-            nft
+            nft,
         }
     }
 
@@ -32,4 +31,4 @@ describe("NTNFT Contract", () => {
             assert.equal(tokenCounter.toString(), "1")
         })
     })
-}) 
+})

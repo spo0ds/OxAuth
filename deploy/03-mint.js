@@ -2,7 +2,6 @@ const { network, ethers } = require("hardhat")
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
     // const { deployer } = await getNamedAccounts()
-
     // const nft = await ethers.getContract("NTNFT", deployer)
     // console.log("Minting NFT...")
     // const nftMintTx = await nft.mintNft()

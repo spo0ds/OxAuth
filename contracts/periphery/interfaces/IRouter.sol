@@ -24,15 +24,9 @@ interface IRouter {
 
     function getHash(address walletAddress) external returns (bytes32);
 
-    function verifySignature(
-        address walletAddress,
-        bytes memory signature
-    ) external;
+    function verifySignature(address walletAddress, bytes memory signature) external;
 
-    function requestDataFromOtherAddress(
-        address walletAddress,
-        string memory data
-    ) external;
+    function requestDataFromOtherAddress(address walletAddress, string memory data) external;
 
     function approveOthersRequest(
         // address approver,

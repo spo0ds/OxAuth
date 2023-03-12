@@ -12,11 +12,7 @@ contract Router is IRouter {
     address private immutable kycAddress;
     address private immutable oxAuthAddress;
 
-    constructor(
-        address _nftAddress,
-        address _kycAddress,
-        address _oxAuthAddress
-    ) {
+    constructor(address _nftAddress, address _kycAddress, address _oxAuthAddress) {
         nftAddress = _nftAddress;
         kycAddress = _kycAddress;
         oxAuthAddress = _oxAuthAddress;
@@ -64,10 +60,7 @@ contract Router is IRouter {
         return IKYC(kycAddress).generateHash(walletAddress);
     }
 
-    function verifySignature(
-        address walletAddress,
-        bytes memory signature
-    ) public override {
+    function verifySignature(address walletAddress, bytes memory signature) public override {
         IKYC(kycAddress).verify(walletAddress, signature);
     }
 
@@ -75,16 +68,10 @@ contract Router is IRouter {
         address walletAddress,
         string memory data
     ) public override {
-        IOxAuth(oxAuthAddress).requestApproveFromDataProvider(
-            walletAddress,
-            data
-        );
+        IOxAuth(oxAuthAddress).requestApproveFromDataProvider(walletAddress, data);
     }
 
-    function approveOthersRequest(
-        address thirdParty,
-        string memory data
-    ) public override {
+    function approveOthersRequest(address thirdParty, string memory data) public override {
         IOxAuth(oxAuthAddress).grantAccessToRequester(thirdParty, data);
     }
 }

@@ -20,18 +20,13 @@ interface IKYC {
     ) external;
 
     /// @notice Verify whether the Kyc details is signed by the right DataProviderAddress
-    function verify(
-        address walletAddress,
-        bytes memory signature
-    ) external returns (bool);
+    function verify(address walletAddress, bytes memory signature) external returns (bool);
 
     /// @notice generateHash is call the getEthSignedMessageHash and retun the hashed signature of
     function generateHash(address walletAddress) external returns (bytes32);
 
     /// @notice getEthhashedData is getter function which react the hashData from storage variable who is mapped through address
-    function getEthHashedData(
-        address dataProviderAddress
-    ) external view returns (bytes32);
+    function getEthHashedData(address dataProviderAddress) external view returns (bytes32);
 
     /// @notice GEtUserDAta is function which decrypts the AES encrypted data.
     function decryptMyData(
@@ -40,10 +35,7 @@ interface IKYC {
     ) external view returns (string memory);
 
     /// @notice UpdateKycDetails is function which updatee the specific KYC data.
-    function updateKYCDetails(
-        string memory kycField,
-        string memory data
-    ) external;
+    function updateKYCDetails(string memory kycField, string memory data) external;
 
     /// @notice storeRsaEncryptedinRetrievable is function where data provider encrypts his/her data using requester's public key.
     /// @param dataRequester represents the address of the requester.

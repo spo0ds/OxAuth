@@ -33,8 +33,7 @@ contract KYC is IKYC, OxAuth {
     /// @notice Mapped hased of User details to its address
     mapping(address => bytes32) private s_hashedData;
 
-    mapping(address => mapping(address => mapping(string => string)))
-        private retievableData;
+    mapping(address => mapping(address => mapping(string => string))) private retievableData;
 
     // mapping(address => Types.UserDetail) private s_retrieveInfo;
 
@@ -102,14 +101,10 @@ contract KYC is IKYC, OxAuth {
     /// @notice GetMessageHash is used to hash User details using Keccak 256
     /// @param dataProviderAddress address of the KycDataProvider
     /// @return bytes32 Keccak256 hash value of the User details
-    function getMessageHash(
-        address dataProviderAddress
-    ) private view returns (bytes32) {
+    function getMessageHash(address dataProviderAddress) private view returns (bytes32) {
         // access the struct datatypes from Types.UserDetail
 
-        Types.UserDetail memory userData = s_userEncryptedInfo[
-            dataProviderAddress
-        ];
+        Types.UserDetail memory userData = s_userEncryptedInfo[dataProviderAddress];
 
         // perform keccak256 and produce the unique has of represent data
 
@@ -137,9 +132,7 @@ contract KYC is IKYC, OxAuth {
     /// @param dataProviderAddress It is address of the User who filled the Kyc details
     /// @dev generate the Signature that proves the particular accound signed the message
     /// @return the Bytes32 address of the signature which represent the address signed the message
-    function getEthSignedMessageHash(
-        address dataProviderAddress
-    ) private returns (bytes32) {
+    function getEthSignedMessageHash(address dataProviderAddress) private returns (bytes32) {
         /*
         Signature is produced by signing a keccak256 hash with the following format:
         "\x19Ethereum Signed Message\n" + len(msg) + msg
@@ -165,9 +158,7 @@ contract KYC is IKYC, OxAuth {
     /// @notice generateHash is call the getEthSignedMessageHash and retun the hashed signature of
     /// @param dataProviderAddress It is address of the User who filled the Kyc details
     /// @return message digest of signature
-    function generateHash(
-        address dataProviderAddress
-    ) external override returns (bytes32) {
+    function generateHash(address dataProviderAddress) external override returns (bytes32) {
         // call the getEtheSignedMessageHash function and generate Ethereum signed message and KYC details
         return getEthSignedMessageHash(dataProviderAddress);
     }
@@ -184,15 +175,10 @@ contract KYC is IKYC, OxAuth {
         bytes memory signature
     ) external override returns (bool) {
         // get the ethSignedMessageHash from signer address ie dataProvideraddress
-        bytes32 ethSignedMessageHash = getEthSignedMessageHash(
-            dataProviderAddress
-        );
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(dataProviderAddress);
 
         // Check whethere EthsginedMessageHash and signature represent the rigth Kyc data Provider
-        if (
-            recoverSigner(ethSignedMessageHash, signature) ==
-            dataProviderAddress
-        ) {
+        if (recoverSigner(ethSignedMessageHash, signature) == dataProviderAddress) {
             return s_userEncryptedInfo[dataProviderAddress].isVerified = true;
         } else {
             return false;
@@ -288,43 +274,23 @@ contract KYC is IKYC, OxAuth {
 
         if (keccak256(abi.encode("name")) == keccak256(abi.encode(data))) {
             return s_userEncryptedInfo[dataProvider].name;
-        } else if (
-            keccak256(abi.encode("father_name")) == keccak256(abi.encode(data))
-        ) {
+        } else if (keccak256(abi.encode("father_name")) == keccak256(abi.encode(data))) {
             return s_userEncryptedInfo[dataProvider].father_name;
-        } else if (
-            keccak256(abi.encode("mother_name")) == keccak256(abi.encode(data))
-        ) {
+        } else if (keccak256(abi.encode("mother_name")) == keccak256(abi.encode(data))) {
             return s_userEncryptedInfo[dataProvider].mother_name;
-        } else if (
-            keccak256(abi.encode("grandFather_name")) ==
-            keccak256(abi.encode(data))
-        ) {
+        } else if (keccak256(abi.encode("grandFather_name")) == keccak256(abi.encode(data))) {
             return s_userEncryptedInfo[dataProvider].grandFather_name;
-        } else if (
-            keccak256(abi.encode("phone_number")) == keccak256(abi.encode(data))
-        ) {
+        } else if (keccak256(abi.encode("phone_number")) == keccak256(abi.encode(data))) {
             return s_userEncryptedInfo[dataProvider].phone_number;
-        } else if (
-            keccak256(abi.encode("dob")) == keccak256(abi.encode(data))
-        ) {
+        } else if (keccak256(abi.encode("dob")) == keccak256(abi.encode(data))) {
             return s_userEncryptedInfo[dataProvider].dob;
-        } else if (
-            keccak256(abi.encode("blood_group")) == keccak256(abi.encode(data))
-        ) {
+        } else if (keccak256(abi.encode("blood_group")) == keccak256(abi.encode(data))) {
             return s_userEncryptedInfo[dataProvider].blood_group;
-        } else if (
-            keccak256(abi.encode("citizenship_number")) ==
-            keccak256(abi.encode(data))
-        ) {
+        } else if (keccak256(abi.encode("citizenship_number")) == keccak256(abi.encode(data))) {
             return s_userEncryptedInfo[dataProvider].citizenship_number;
-        } else if (
-            keccak256(abi.encode("pan_number")) == keccak256(abi.encode(data))
-        ) {
+        } else if (keccak256(abi.encode("pan_number")) == keccak256(abi.encode(data))) {
             return s_userEncryptedInfo[dataProvider].pan_number;
-        } else if (
-            keccak256(abi.encode("location")) == keccak256(abi.encode(data))
-        ) {
+        } else if (keccak256(abi.encode("location")) == keccak256(abi.encode(data))) {
             return s_userEncryptedInfo[dataProvider].location;
         } else {
             revert KYC__DataDoesNotExist();
@@ -339,54 +305,26 @@ contract KYC is IKYC, OxAuth {
     /// @param  kycField This represent the specific field of KYC form such as name, dob and so forth
     /// @param  data that need to be update
 
-    function updateKYCDetails(
-        string memory kycField,
-        string memory data
-    ) external override {
+    function updateKYCDetails(string memory kycField, string memory data) external override {
         if (keccak256(abi.encode("name")) == keccak256(abi.encode(kycField))) {
             s_userEncryptedInfo[msg.sender].name = data;
-        } else if (
-            keccak256(abi.encode("father_name")) ==
-            keccak256(abi.encode(kycField))
-        ) {
+        } else if (keccak256(abi.encode("father_name")) == keccak256(abi.encode(kycField))) {
             s_userEncryptedInfo[msg.sender].name = data;
-        } else if (
-            keccak256(abi.encode("mother_name")) ==
-            keccak256(abi.encode(kycField))
-        ) {
+        } else if (keccak256(abi.encode("mother_name")) == keccak256(abi.encode(kycField))) {
             s_userEncryptedInfo[msg.sender].name = data;
-        } else if (
-            keccak256(abi.encode("grandFather_name")) ==
-            keccak256(abi.encode(kycField))
-        ) {
+        } else if (keccak256(abi.encode("grandFather_name")) == keccak256(abi.encode(kycField))) {
             s_userEncryptedInfo[msg.sender].name = data;
-        } else if (
-            keccak256(abi.encode("phone_number")) ==
-            keccak256(abi.encode(kycField))
-        ) {
+        } else if (keccak256(abi.encode("phone_number")) == keccak256(abi.encode(kycField))) {
             s_userEncryptedInfo[msg.sender].name = data;
-        } else if (
-            keccak256(abi.encode("dob")) == keccak256(abi.encode(kycField))
-        ) {
+        } else if (keccak256(abi.encode("dob")) == keccak256(abi.encode(kycField))) {
             s_userEncryptedInfo[msg.sender].name = data;
-        } else if (
-            keccak256(abi.encode("blood_group")) ==
-            keccak256(abi.encode(kycField))
-        ) {
+        } else if (keccak256(abi.encode("blood_group")) == keccak256(abi.encode(kycField))) {
             s_userEncryptedInfo[msg.sender].name = data;
-        } else if (
-            keccak256(abi.encode("citizenship_number")) ==
-            keccak256(abi.encode(kycField))
-        ) {
+        } else if (keccak256(abi.encode("citizenship_number")) == keccak256(abi.encode(kycField))) {
             s_userEncryptedInfo[msg.sender].name = data;
-        } else if (
-            keccak256(abi.encode("pan_number")) ==
-            keccak256(abi.encode(kycField))
-        ) {
+        } else if (keccak256(abi.encode("pan_number")) == keccak256(abi.encode(kycField))) {
             s_userEncryptedInfo[msg.sender].name = data;
-        } else if (
-            keccak256(abi.encode("location")) == keccak256(abi.encode(kycField))
-        ) {
+        } else if (keccak256(abi.encode("location")) == keccak256(abi.encode(kycField))) {
             s_userEncryptedInfo[msg.sender].name = data;
         } else {
             revert KYC__FieldDoesNotExist();

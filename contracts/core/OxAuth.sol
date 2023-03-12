@@ -22,8 +22,7 @@ error OxAuth__NotDataProvider();
 contract OxAuth is IOxAuth {
     /// @notice this mapped DataProvider address and DataRequestor address and specific data that Viewer want to see
     /// return mapped in bool format
-    mapping(address => mapping(address => mapping(string => bool)))
-        internal _Approve;
+    mapping(address => mapping(address => mapping(string => bool))) internal _Approve;
 
     // check mapped data being asked or not asked through enum
     // enum Status {
@@ -71,9 +70,8 @@ contract OxAuth is IOxAuth {
     modifier onlyRequestedAccount(address requestAddress, string memory data) {
         // dataMapped store that Keccka256 on the basis of particular KYC data field
         if (
-            keccak256(
-                abi.encodePacked(_RequestedData[msg.sender][requestAddress])
-            ) == keccak256(abi.encode(data))
+            keccak256(abi.encodePacked(_RequestedData[msg.sender][requestAddress])) ==
+            keccak256(abi.encode(data))
         ) {
             // checks the requested data is already mapped or not
             revert OxAuth__NotApprover();
@@ -106,11 +104,7 @@ contract OxAuth is IOxAuth {
     function grantAccessToRequester(
         address dataRequester,
         string memory data
-    )
-        external
-        override
-        /* onlyOnce*/ onlyRequestedAccount(dataRequester, data)
-    {
+    ) external override /* onlyOnce*/ onlyRequestedAccount(dataRequester, data) {
         if (
             keccak256(abi.encode(_RequestedData[msg.sender][dataRequester])) !=
             keccak256(abi.encode(data))

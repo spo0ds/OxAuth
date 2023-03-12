@@ -115,9 +115,7 @@ contract NTNFT is INTNFT, ERC721 {
 
     /// @notice gets the token URI of an NFT.
 
-    function tokenURI(
-        uint /*tokenId*/
-    ) public pure override returns (string memory) {
+    function tokenURI(uint /*tokenId*/) public pure override returns (string memory) {
         return _TOKEN_URI;
     }
 
@@ -138,12 +136,7 @@ contract NTNFT is INTNFT, ERC721 {
     /// --- Disabling Transfer Of Soulbound NFT --- ///
 
     /// @notice Function disabled as cannot transfer a soulbound nft
-    function safeTransferFrom(
-        address,
-        address,
-        uint256,
-        bytes memory
-    ) public pure override {
+    function safeTransferFrom(address, address, uint256, bytes memory) public pure override {
         revert NTNFT__NftNotTransferrable();
     }
 
@@ -173,10 +166,7 @@ contract NTNFT is INTNFT, ERC721 {
     }
 
     /// @notice Function disabled as cannot transfer a soulbound nft
-    function isApprovedForAll(
-        address,
-        address
-    ) public pure override returns (bool) {
+    function isApprovedForAll(address, address) public pure override returns (bool) {
         revert NTNFT__NftNotTransferrable();
     }
 }
