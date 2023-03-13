@@ -23,6 +23,8 @@
         "eccrypto": "^1.1.6",
         "node-forge": "^1.3.1",
         "node-rsa": "^1.1.1",
+        "sol2uml": "^2.5.2",
+        "solgraph": "^1.0.2",
         "surya": "^0.4.6"
     }
 }
