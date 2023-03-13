@@ -229,15 +229,15 @@ describe("KYC", function () {
     })
 
     describe("storeRsaEncryptedinRetrievable", function () {
-        it("should not allow non-approved data requester's data to store encrypted data", async function () {
+        it("should not allow non-approved data provider to store encrypted data", async function () {
             const kycField = "name"
             const data = "0x1234abcd"
             await expect(
-                kyc.connect(owner).storeRsaEncryptedinRetrievable(owner.address, kycField, data)
+                kyc.storeRsaEncryptedinRetrievable(owner.address, kycField, data)
             ).to.be.revertedWith("KYC__NotYetApprovedToEncryptWithPublicKey")
         })
 
-        it("should allow data provider to store encrypted data", async function () {
+        it("should allow approved data provider to store encrypted data", async function () {
             const kycField = "name"
             await kyc
                 .connect(owner)
@@ -253,18 +253,37 @@ describe("KYC", function () {
                     "New York",
                     false
                 )
-            await oxAuth.connect(user).requestApproveFromDataProvider(owner.address, kycField)
-            await oxAuth.connect(owner).grantAccessToRequester(user.address, kycField)
+            // await kyc.connect(user).requestApproveFromDataProvider(owner.address, kycField)
+            // await kyc.connect(owner).grantAccessToRequester(user.address, kycField)
+            // await kyc.connect(owner).approveCondition(user.address, owner.address, kycField);
+
+            const rqst = await kyc
+                .connect(user)
+                .requestApproveFromDataProvider(owner.address, kycField)
+            await rqst.wait()
+
+            const approve = await kyc.connect(owner).grantAccessToRequester(user.address, "name")
+            await approve.wait()
             await expect(
-                await kyc
-                    .connect(owner)
-                    .storeRsaEncryptedinRetrievable(user.address, kycField, "Owner")
+                kyc.connect(owner).storeRsaEncryptedinRetrievable(user.address, kycField, "Owner")
             ).to.not.be.reverted
+            const retrievedData = await kyc
+                .connect(user)
+                .getRequestedDataFromProvider(owner.address, kycField)
+            expect(retrievedData).to.equal("Owner")
         })
     })
 
     describe("getRequestedDataFromProvider", function () {
-        beforeEach(async function () {
+        it("should not allow non-approved data requester to retrieve encrypted data", async function () {
+            const kycField = "name"
+            await expect(
+                kyc.getRequestedDataFromProvider(owner.address, kycField)
+            ).to.be.revertedWith("KYC__NotYetApprovedToView")
+        })
+
+        it("should allow approved data requester to retrieve encrypted data", async function () {
+            const kycField = "name"
             await kyc
                 .connect(owner)
                 .setUserData(
@@ -277,29 +296,15 @@ describe("KYC", function () {
                     "123456789",
                     "ABCDE1234F",
                     "New York",
-                    false
+                    "true"
                 )
-            await oxAuth.connect(user).requestApproveFromDataProvider(owner.address, "name")
-            await oxAuth.connect(owner).grantAccessToRequester(user.address, "name")
-        })
-        it("should not allow non-approved data requester to retrieve encrypted data", async function () {
-            const kycField = "name"
-            await expect(
-                kyc.connect(user).getRequestedDataFromProvider(owner.address, kycField)
-            ).to.be.revertedWith("KYC__NotYetApprovedToView")
-        })
-
-        it("should allow approved data requester to retrieve encrypted data", async function () {
-            await kyc.connect(owner).storeRsaEncryptedinRetrievable(user.address, "name", "xed")
-
-            // Add approval check here
-            const isApproved = await oxAuth._Approve[owner.address][user.address]["name"]
-            expect(isApproved).to.equal(true)
-
+            await kyc.connect(user).requestApproveFromDataProvider(owner.address, kycField)
+            await kyc.connect(owner).grantAccessToRequester(user.address, kycField)
+            await kyc.connect(owner).storeRsaEncryptedinRetrievable(user.address, kycField, "owner")
             const retrievedData = await kyc
-                .connect(user)
-                .getRequestedDataFromProvider(owner.address, "name")
-            expect(retrievedData).to.equal("xed")
+                .connect(user.address)
+                .getRequestedDataFromProvider(owner.address, kycField)
+            expect(retrievedData).to.equal("owner")
         })
     })
 })
