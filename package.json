@@ -17,6 +17,7 @@
         "solidity-coverage": "^0.8.2"
     },
     "dependencies": {
+        "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
         "@openzeppelin/contracts": "^4.8.2",
         "crypto-js": "^4.1.1",
         "eccrypto": "^1.1.6",

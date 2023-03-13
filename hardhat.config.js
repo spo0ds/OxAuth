@@ -30,11 +30,11 @@ module.exports = {
         },
     },
     gasReporter: {
-        enabled: false,
+        enabled: true,
         currency: "USD",
         outputFile: "gas-report.txt",
         noColors: true,
-        // coinmarketcap: process.env.COINMARKETCAP_API_KEY
+        coinmarketcap: process.env.COINMARKETCAP_API_KEY,
     },
     solidity: "0.8.17",
     namedAccounts: {
