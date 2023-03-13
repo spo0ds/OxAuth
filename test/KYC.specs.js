@@ -1,8 +1,9 @@
-const { expect } = require("chai")
+const { expect, assert } = require("chai")
 
 describe("KYC", function () {
     let kyc
     let nft
+    let oxAuth
     let owner
     let alice
     let user
@@ -12,8 +13,11 @@ describe("KYC", function () {
         nft = await NFT.deploy()
         const KYC = await ethers.getContractFactory("KYC")
         kyc = await KYC.deploy(nft.address)
+        const OxAuth = await ethers.getContractFactory("OxAuth")
+        oxAuth = await OxAuth.deploy()
         ;[owner, alice, user] = await ethers.getSigners()
         await nft.connect(owner).mintNft()
+        await nft.connect(user).mintNft()
     })
 
     describe("setUserData", function () {
@@ -103,74 +107,6 @@ describe("KYC", function () {
         })
     })
 
-    // describe("getMessageHash", function () {
-    //     it("should return the expected message hash", async function () {
-    //         const dataProviderAddress = owner.address
-
-    //         await kyc
-    //             .connect(owner)
-    //             .setUserData(
-    //                 "Owner",
-    //                 "Bob",
-    //                 "Carol",
-    //                 "Dave",
-    //                 "555-555-1234",
-    //                 "01/01/2000",
-    //                 "O+",
-    //                 "123456789",
-    //                 "ABCDE1234F",
-    //                 "New York"
-    //             )
-
-    //         const retrievedName = await kyc.decryptMyData(owner.address, "name")
-    //         const retrievedFatherName = await kyc.decryptMyData(owner.address, "father_name")
-    //         const retrievedMotherName = await kyc.decryptMyData(owner.address, "mother_name")
-    //         const retrievedGrandFatherName = await kyc.decryptMyData(
-    //             owner.address,
-    //             "grandFather_name"
-    //         )
-    //         const retrievedPhoneNumber = await kyc.decryptMyData(owner.address, "phone_number")
-    //         const retrievedDob = await kyc.decryptMyData(owner.address, "dob")
-    //         const retrievedBloodGroup = await kyc.decryptMyData(owner.address, "blood_group")
-    //         const retrievedCitizenshipNumber = await kyc.decryptMyData(
-    //             owner.address,
-    //             "citizenship_number"
-    //         )
-    //         const retrievedPanNumber = await kyc.decryptMyData(owner.address, "pan_number")
-    //         const retrievedLocation = await kyc.decryptMyData(owner.address, "location")
-    //         const expectedHash = ethers.utils.keccak256(
-    //             ethers.utils.solidityPack(
-    //                 [
-    //                     "string",
-    //                     "string",
-    //                     "string",
-    //                     "string",
-    //                     "string",
-    //                     "string",
-    //                     "string",
-    //                     "string",
-    //                     "string",
-    //                     "string",
-    //                 ],
-    //                 [
-    //                     retrievedName,
-    //                     retrievedFatherName,
-    //                     retrievedMotherName,
-    //                     retrievedGrandFatherName,
-    //                     retrievedPhoneNumber,
-    //                     retrievedDob,
-    //                     retrievedBloodGroup,
-    //                     retrievedCitizenshipNumber,
-    //                     retrievedPanNumber,
-    //                     retrievedLocation,
-    //                 ]
-    //             )
-    //         )
-    //         const messageHash = await kyc.getMessageHash(owner.address)
-    //         expect(messageHash).to.equal(expectedHash)
-    //     })
-    // })
-
     describe("generateHash", function () {
         it("should return a valid signed message hash", async function () {
             const name = "Owner"
@@ -208,37 +144,162 @@ describe("KYC", function () {
             console.log(`Signed message hash generated: ${hash}`)
 
             // Check if the hash is valid
-            const messageHash = await kyc.getEthHashedData(owner.address)
-            const expectedHash = ethers.utils.solidityKeccak256(
-                ["bytes"],
-                [
-                    ethers.utils.concat([
-                        keccak256(
-                            abi.encodePacked(
-                                `\x19Ethereum Signed Message:\n32`,
-                                getMessageHash(dataProviderAddress)
-                            )
-                        ),
-                    ]),
-                ]
-            )
-            expect(hash).to.equal(expectedHash)
+            it("should return the expected hash", async function () {
+                // Call the function to get the hash
+                const hash = await contractInstance.getEthSignedMessageHash(owner.address)
 
-            console.log(`Hash validation passed: ${hash}`)
+                // Generate the expected hash
+                const messageHash = ethers.utils.solidityKeccak256(["address"], [owner.address])
+                const expectedHash = ethers.utils.solidityKeccak256(
+                    ["string", "bytes32"],
+                    ["\x19Ethereum Signed Message:\n32", messageHash]
+                )
 
-            // Check if the hash is stored in the contract
-            const storedHash = await kyc.getEthHashedData(owner.address)
-            expect(storedHash).to.equal(expectedHash)
+                expect(hash).to.equal(expectedHash)
 
-            console.log(`Hash stored in the contract: ${storedHash}`)
+                console.log(`Hash validation passed: ${hash}`)
+
+                // Check if the hash is stored in the contract
+                const storedHash = await kyc.getEthHashedData(owner.address)
+                expect(storedHash).to.equal(expectedHash)
+
+                console.log(`Hash stored in the contract: ${storedHash}`)
+            })
+
+            it("should revert if the caller has not minted an NFT", async function () {
+                await expect(kyc.connect(user).generateHash(user.address)).to.be.revertedWith(
+                    "KYC: Address has not minted an NFT"
+                )
+
+                console.log("Transaction reverted as expected.")
+            })
+        })
+    })
+
+    describe("decryptMyData", function () {
+        it("should return the decrypted data for a valid field", async function () {
+            await kyc
+                .connect(owner)
+                .setUserData(
+                    "Owner",
+                    "Bob",
+                    "Carol",
+                    "Dave",
+                    "555-555-1234",
+                    "01/01/2000",
+                    "123456789",
+                    "ABCDE1234F",
+                    "New York",
+                    false
+                )
+            const decryptedName = await kyc.decryptMyData(owner.address, "name")
+            const decryptedPhoneNumber = await kyc.decryptMyData(owner.address, "phone_number")
+
+            assert.equal(decryptedName, "Owner")
+            assert.equal(decryptedPhoneNumber, "555-555-1234")
         })
 
-        it("should revert if the caller has not minted an NFT", async function () {
-            await expect(kyc.connect(user).generateHash(user.address)).to.be.revertedWith(
-                "KYC: Address has not minted an NFT"
+        it("should revert for an invalid field", async function () {
+            await expect(kyc.decryptMyData(owner.address, "invalid_field")).to.be.revertedWith(
+                "KYC__DataDoesNotExist"
             )
+        })
 
-            console.log("Transaction reverted as expected.")
+        it("should revert if called by someone other than the data provider", async function () {
+            await expect(kyc.decryptMyData(user.address, "name")).to.be.revertedWith(
+                "KYC__NotOwner"
+            )
+        })
+    })
+
+    describe("updateKYCDetails", function () {
+        it("should update the KYC data for a valid field", async function () {
+            await kyc.updateKYCDetails("name", "Bob", { from: owner.address })
+
+            const decryptedName = await kyc.decryptMyData(owner.address, "name")
+
+            assert.equal(decryptedName, "Bob")
+        })
+
+        it("should revert for an invalid field", async function () {
+            await expect(kyc.updateKYCDetails("invalid_field", "data")).to.be.revertedWith(
+                "KYC__FieldDoesNotExist"
+            )
+        })
+    })
+
+    describe("storeRsaEncryptedinRetrievable", function () {
+        it("should not allow non-approved data requester's data to store encrypted data", async function () {
+            const kycField = "name"
+            const data = "0x1234abcd"
+            await expect(
+                kyc.connect(owner).storeRsaEncryptedinRetrievable(owner.address, kycField, data)
+            ).to.be.revertedWith("KYC__NotYetApprovedToEncryptWithPublicKey")
+        })
+
+        it("should allow data provider to store encrypted data", async function () {
+            const kycField = "name"
+            await kyc
+                .connect(owner)
+                .setUserData(
+                    "Owner",
+                    "Bob",
+                    "Carol",
+                    "Dave",
+                    "555-555-1234",
+                    "01/01/2000",
+                    "123456789",
+                    "ABCDE1234F",
+                    "New York",
+                    false
+                )
+            await oxAuth.connect(user).requestApproveFromDataProvider(owner.address, kycField)
+            await oxAuth.connect(owner).grantAccessToRequester(user.address, kycField)
+            await expect(
+                await kyc
+                    .connect(owner)
+                    .storeRsaEncryptedinRetrievable(user.address, kycField, "Owner")
+            ).to.not.be.reverted
+        })
+    })
+
+    describe("getRequestedDataFromProvider", function () {
+        beforeEach(async function () {
+            await kyc
+                .connect(owner)
+                .setUserData(
+                    "Owner",
+                    "Bob",
+                    "Carol",
+                    "Dave",
+                    "555-555-1234",
+                    "01/01/2000",
+                    "123456789",
+                    "ABCDE1234F",
+                    "New York",
+                    false
+                )
+            await oxAuth.connect(user).requestApproveFromDataProvider(owner.address, "name")
+            await oxAuth.connect(owner).grantAccessToRequester(user.address, "name")
+        })
+        it("should not allow non-approved data requester to retrieve encrypted data", async function () {
+            const kycField = "name"
+            await expect(
+                kyc.connect(user).getRequestedDataFromProvider(owner.address, kycField)
+            ).to.be.revertedWith("KYC__NotYetApprovedToView")
+        })
+
+        it("should allow approved data requester to retrieve encrypted data", async function () {
+            await kyc.connect(owner).storeRsaEncryptedinRetrievable(user.address, "name", "xed")
+
+            // Add approval check here
+            const isApproved = await oxAuth._Approve[owner.address][user.address]["name"]
+            expect(isApproved).to.equal(true)
+
+            const retrievedData = await kyc
+                .connect(user)
+                .getRequestedDataFromProvider(owner.address, "name")
+            expect(retrievedData).to.equal("xed")
         })
     })
 })

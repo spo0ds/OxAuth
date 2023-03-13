@@ -85,13 +85,13 @@ contract OxAuth is IOxAuth {
 
     /// @notice requestApproveFromDataProvide helps to recieve data ie kyc data from the data Provider
     /// @param dataProvider who represent the address of data Provider who fill the KYC data
-    /// @param data shows the requested Kyc data field that is requested by data Requestor
+    /// @param kycField shows the requested Kyc data field that is requested by data Requestor
     function requestApproveFromDataProvider(
         address dataProvider,
-        string memory data
+        string memory kycField
     ) external override {
-        _RequestedData[dataProvider][msg.sender] = data;
-        emit ApproveRequest(dataProvider, msg.sender, data);
+        _RequestedData[dataProvider][msg.sender] = kycField;
+        emit ApproveRequest(dataProvider, msg.sender, kycField);
     }
 
     /*///////////////////////////////////////////////////////////////////////////////
@@ -100,21 +100,21 @@ contract OxAuth is IOxAuth {
 
     /// @notice grantAccessToRequester grant the permission to DataRequestor
     /// @param dataRequester address of the dataRequestor
-    /// @param data represent the data specific Kyc data field that requestor requesting
+    /// @param kycField represent the data specific Kyc data field that requestor requesting
     function grantAccessToRequester(
         address dataRequester,
-        string memory data
-    ) external override /* onlyOnce*/ onlyRequestedAccount(dataRequester, data) {
+        string memory kycField
+    ) external override /* onlyOnce*/ onlyRequestedAccount(dataRequester, kycField) {
         if (
             keccak256(abi.encode(_RequestedData[msg.sender][dataRequester])) !=
-            keccak256(abi.encode(data))
+            keccak256(abi.encode(kycField))
         ) {
             revert OxAuth__NotDataProvider();
         }
-        _Approve[msg.sender][dataRequester][data] = true;
+        _Approve[msg.sender][dataRequester][kycField] = true;
         // _StartingTimeInterval[dataProvider][dataRequester][data] = block
         //     .timestamp;
-        emit AccessGrant(msg.sender, dataRequester, data);
+        emit AccessGrant(msg.sender, dataRequester, kycField);
     }
 
     /*///////////////////////////////////////////////////////////////////////////////
