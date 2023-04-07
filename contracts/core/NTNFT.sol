@@ -22,9 +22,6 @@ error NTNFT__NotNFTOwner();
 contract NTNFT is INTNFT, ERC721 {
     /// @notice this constant variable stores the link of the IPFS on which the actual image of the NFT lies.
 
-    // string private constant _TOKEN_URI =
-    //     "https://ipfs.io/ipfs/Qmcx9T9WYxU2wLuk5bptJVwqjtxQPL8SxjgUkoEaDqWzti?filename=BasicNFT.png";
-
     /// @notice id of the NFT.
 
     using Counters for Counters.Counter;
