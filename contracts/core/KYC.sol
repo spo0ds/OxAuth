@@ -78,7 +78,6 @@ contract KYC is IKYC, OxAuth {
         string memory _location
     ) external override onlyMinted {
         //mapped deployer address and provide their details
-
         s_userEncryptedInfo[msg.sender] = Types.UserDetail(
             _name,
             _father_name,

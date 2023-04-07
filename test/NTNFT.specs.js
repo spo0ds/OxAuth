@@ -52,9 +52,7 @@ describe("NTNFT Contract", () => {
             await nft.mintNft()
             const tokenId = 0
             const burner = accounts[1]
-            await expect(nft.connect(burner).burn(tokenId)).to.be.revertedWith(
-                "NTNFT__NftNotTransferrable"
-            )
+            await expect(nft.connect(burner).burn(tokenId)).to.be.revertedWith("NTNFT__NotNFTOwner")
         })
     })
 

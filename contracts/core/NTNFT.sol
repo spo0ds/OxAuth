@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 
 import "./interfaces/INTNFT.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 /*///////////////////////////////////////////////////////////////////////////////
                            CUSTOME ERROR 
@@ -12,6 +12,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 error NTNFT__NftNotTransferrable();
 error NTNFT__CanOnlyMintOnce();
+error NTNFT__NotNFTOwner();
 
 /// @title OxAuth
 /// @author Spooderman
@@ -20,12 +21,15 @@ error NTNFT__CanOnlyMintOnce();
 
 contract NTNFT is INTNFT, ERC721 {
     /// @notice this constant variable stores the link of the IPFS on which the actual image of the NFT lies.
-    string private constant _TOKEN_URI =
-        "https://ipfs.io/ipfs/Qmcx9T9WYxU2wLuk5bptJVwqjtxQPL8SxjgUkoEaDqWzti?filename=BasicNFT.png";
+
+    // string private constant _TOKEN_URI =
+    //     "https://ipfs.io/ipfs/Qmcx9T9WYxU2wLuk5bptJVwqjtxQPL8SxjgUkoEaDqWzti?filename=BasicNFT.png";
 
     /// @notice id of the NFT.
 
-    uint256 private s_tokenCounter;
+    using Counters for Counters.Counter;
+
+    Counters.Counter private s_tokenCounter;
 
     /// @notice this mapping stores whether that particular address has already minted NFT or not.
 
@@ -37,9 +41,7 @@ contract NTNFT is INTNFT, ERC721 {
 
     /// @notice Gives name and symbol to the NFT.
 
-    constructor() ERC721("OxAuth", "Ox") {
-        // s_tokenCounter = 0;
-    }
+    constructor() ERC721("OxAuth", "Ox") {}
 
     /*///////////////////////////////////////////////////////////////////////////////
                            Modifier
@@ -61,34 +63,12 @@ contract NTNFT is INTNFT, ERC721 {
     /// @notice allows an address to mint an NFT.
 
     function mintNft() external override onlyOnceMint returns (uint256) {
-        _safeMint(msg.sender, s_tokenCounter++);
+        uint256 tokenId = s_tokenCounter.current();
+        s_tokenCounter.increment();
+        _safeMint(msg.sender, tokenId);
         _minter[msg.sender] = true;
-        return s_tokenCounter;
+        return tokenId;
     }
-
-    // // function _beforeTokenTransfer(
-    // //     address from,
-    // //     address to,
-    // //     uint256 /*tokenId*/,
-    // //     uint256 /*batchSize*/
-    // // ) internal pure override {
-    // //     if (from != address(0) || to != address(0)) {
-    // //         revert NtNft__NftNotTransferrable();
-    // //     }
-    // // }
-
-    // function _afterTokenTransfer(
-    //     address from,
-    //     address to,
-    //     uint256 tokenId,
-    //     uint256 /*batchSize*/
-    // ) internal override {
-    //     if (from == address(0)) {
-    //         emit Attest(to, tokenId);
-    //     } else if (to == address(0)) {
-    //         emit Revoke(to, tokenId);
-    //     }
-    // }
 
     /*///////////////////////////////////////////////////////////////////////////////
                            burn
@@ -99,15 +79,11 @@ contract NTNFT is INTNFT, ERC721 {
 
     function burn(uint tokenId) external override {
         if (ownerOf(tokenId) != msg.sender) {
-            revert NTNFT__NftNotTransferrable();
+            revert NTNFT__NotNFTOwner();
         }
-        _minter[msg.sender] = false;
+        delete _minter[msg.sender];
         _burn(tokenId);
     }
-
-    // function revoke(uint tokenId) external override onlyOwner {
-    //     _burn(tokenId);
-    // }
 
     /*///////////////////////////////////////////////////////////////////////////////
                            View and Pure Functions
@@ -116,12 +92,13 @@ contract NTNFT is INTNFT, ERC721 {
     /// @notice gets the token URI of an NFT.
 
     function tokenURI(uint /*tokenId*/) public pure override returns (string memory) {
-        return _TOKEN_URI;
+        return
+            "https://ipfs.io/ipfs/Qmcx9T9WYxU2wLuk5bptJVwqjtxQPL8SxjgUkoEaDqWzti?filename=BasicNFT.png";
     }
 
     /// @notice gets the tokenCounter.
     function getTokenCounter() external view returns (uint) {
-        return s_tokenCounter;
+        return s_tokenCounter.current();
     }
 
     /// @notice returns whether an address has minted NFT or not
