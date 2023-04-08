@@ -35,8 +35,6 @@ contract KYC is IKYC, OxAuth {
 
     mapping(address => mapping(address => mapping(string => string))) private retievableData;
 
-    // mapping(address => Types.UserDetail) private s_retrieveInfo;
-
     address private immutable nftAddress;
 
     constructor(address _nftAddress) {
@@ -263,10 +261,6 @@ contract KYC is IKYC, OxAuth {
         address dataProvider,
         string memory data
     ) external view override returns (string memory) {
-        // require(
-        //     OxAuth._Approve[dataProvider][msg.sender][data] == true,
-        //     "not access yet"
-        // );
         if (dataProvider != msg.sender) {
             revert KYC__NotOwner();
         }
@@ -362,10 +356,6 @@ contract KYC is IKYC, OxAuth {
         address dataProvider,
         string memory kycField
     ) external view override onlyMinted returns (string memory) {
-        // require(
-        //     OxAuth._Approve[dataProvider][msg.sender][kycField] == true,
-        //     "not access yet"
-        // );
         if (!OxAuth._Approve[dataProvider][msg.sender][kycField]) {
             revert KYC__NotYetApprovedToView();
         }

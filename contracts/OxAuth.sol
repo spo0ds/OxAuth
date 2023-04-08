@@ -24,40 +24,8 @@ contract OxAuth is IOxAuth {
     /// return mapped in bool format
     mapping(address => mapping(address => mapping(string => bool))) internal _Approve;
 
-    // check mapped data being asked or not asked through enum
-    // enum Status {
-    //     notAsked,
-    //     Asked
-    // }
-
-    // check whether data is already send to data Requestor
-    // Implemenation for Further use
-
-    // enum dataStatus {
-    //     locked,
-    //     notLocked
-    // }
-
-    /// mapped the address of and status of data that has been asked
-    /// mapping(address => Status) private _ApproveStatus;
-
     // mapped the Requested Data that user want to receieve.
     mapping(address => mapping(address => string)) private _RequestedData;
-
-    // mapped Data status to prevent the duplication of data when requesting data
-    // mapping(address => mapping(string => dataStatus)) private _DataStatus;
-
-    /// mapped the timeInterval when data is requested
-
-    //mapping(address => mapping(string => uint)) private _RequestTimeInterval;
-    //mapping(address => mapping(address => mapping(string => uint))) private _StartingTimeInterval;
-
-    // modifier onlyOnce() {
-    //     if (_ApproveStatus[msg.sender] == Status.Asked) {
-    //         revert OxAuth__OnlyOnceAllowed();
-    //     }
-    //     _;
-    // }
 
     /*///////////////////////////////////////////////////////////////////////////////
                            onlyRequestedAccount
@@ -104,7 +72,7 @@ contract OxAuth is IOxAuth {
     function grantAccessToRequester(
         address dataRequester,
         string memory kycField
-    ) external override /* onlyOnce*/ onlyRequestedAccount(dataRequester, kycField) {
+    ) external override onlyRequestedAccount(dataRequester, kycField) {
         if (
             keccak256(abi.encode(_RequestedData[msg.sender][dataRequester])) !=
             keccak256(abi.encode(kycField))
@@ -112,8 +80,6 @@ contract OxAuth is IOxAuth {
             revert OxAuth__NotDataProvider();
         }
         _Approve[msg.sender][dataRequester][kycField] = true;
-        // _StartingTimeInterval[dataProvider][dataRequester][data] = block
-        //     .timestamp;
         emit AccessGrant(msg.sender, dataRequester, kycField);
     }
 
@@ -127,7 +93,7 @@ contract OxAuth is IOxAuth {
     function approveCondition(
         address dataRequester,
         address dataProvider,
-        string memory data /*onlyAtTime(walletAddress, data)*/
+        string memory data
     ) external view override returns (bool) {
         return _Approve[dataProvider][dataRequester][data];
     }

@@ -20,8 +20,6 @@ error NTNFT__NotNFTOwner();
 /// @notice OxAuth provides the functionality to mint soul bound token but only one address could mint once.
 
 contract NTNFT is INTNFT, ERC721 {
-    /// @notice this constant variable stores the link of the IPFS on which the actual image of the NFT lies.
-
     /// @notice id of the NFT.
 
     using Counters for Counters.Counter;
