@@ -11,7 +11,6 @@ import {IOxAuth} from "./interfaces/IOxAuth.sol";
 error OxAuth__OnlyOnceAllowed();
 error OxAuth__NotApprover();
 error OxAuth__NotApprovedToView();
-error OxAuth__TimeFinishedToView();
 error OxAuth__NotDataProvider();
 
 /// @title OxAuth
@@ -22,11 +21,9 @@ error OxAuth__NotDataProvider();
 contract OxAuth is IOxAuth {
     /// @notice this mapped DataProvider address and DataRequestor address and specific data that Viewer want to see
     /// return mapped in bool format
-    mapping(address => mapping(address => mapping(string => bool))) internal _Approve;
-
+    mapping(bytes32 => uint256) internal _approve;
     // mapped the Requested Data that user want to receieve.
-    mapping(address => mapping(address => string)) private _RequestedData;
-
+    mapping(bytes32 => string) private _requestedData;
     /*///////////////////////////////////////////////////////////////////////////////
                            onlyRequestedAccount
     //////////////////////////////////////////////////////////////////////////////*/
@@ -36,15 +33,24 @@ contract OxAuth is IOxAuth {
     /// @param data represent data field of KYC
 
     modifier onlyRequestedAccount(address requestAddress, string memory data) {
-        // dataMapped store that Keccka256 on the basis of particular KYC data field
-        if (
-            keccak256(abi.encodePacked(_RequestedData[msg.sender][requestAddress])) ==
-            keccak256(abi.encode(data))
-        ) {
-            // checks the requested data is already mapped or not
-            revert OxAuth__NotApprover();
-        }
+        bytes32 key = _encodeKey(msg.sender, requestAddress, data);
+        require(
+            keccak256(abi.encodePacked(_requestedData[key])) == keccak256(abi.encodePacked(data)),
+            "OxAuth__NotApprovedToView"
+        );
         _;
+    }
+
+    function _encodeKey(
+        address dataProvider,
+        address dataRequester,
+        string memory data
+    ) internal pure returns (bytes32) {
+        return keccak256(abi.encode(dataProvider, dataRequester, data));
+    }
+
+    function _getBitMask(uint256 bitIndex) private pure returns (uint256) {
+        return uint256(1) << bitIndex;
     }
 
     /*///////////////////////////////////////////////////////////////////////////////
@@ -58,7 +64,9 @@ contract OxAuth is IOxAuth {
         address dataProvider,
         string memory kycField
     ) external override {
-        _RequestedData[dataProvider][msg.sender] = kycField;
+        bytes32 key = _encodeKey(dataProvider, msg.sender, kycField);
+        require(bytes(_requestedData[key]).length == 0, "OxAuth__OnlyOnceAllowed");
+        _requestedData[key] = kycField;
         emit ApproveRequest(dataProvider, msg.sender, kycField);
     }
 
@@ -73,13 +81,10 @@ contract OxAuth is IOxAuth {
         address dataRequester,
         string memory kycField
     ) external override onlyRequestedAccount(dataRequester, kycField) {
-        if (
-            keccak256(abi.encode(_RequestedData[msg.sender][dataRequester])) !=
-            keccak256(abi.encode(kycField))
-        ) {
-            revert OxAuth__NotDataProvider();
-        }
-        _Approve[msg.sender][dataRequester][kycField] = true;
+        bytes32 key = _encodeKey(msg.sender, dataRequester, kycField);
+        uint256 index = uint256(uint8(key[0])) % 32;
+        uint256 bitMask = _getBitMask(index);
+        _approve[key] |= bitMask;
         emit AccessGrant(msg.sender, dataRequester, kycField);
     }
 
@@ -95,7 +100,10 @@ contract OxAuth is IOxAuth {
         address dataProvider,
         string memory data
     ) external view override returns (bool) {
-        return _Approve[dataProvider][dataRequester][data];
+        bytes32 key = _encodeKey(dataProvider, dataRequester, data);
+        uint256 index = uint256(uint8(key[0])) % 32;
+        uint256 bitMask = _getBitMask(index);
+        return (_approve[key] & bitMask) != 0;
     }
 
     /*///////////////////////////////////////////////////////////////////////////////
@@ -108,8 +116,11 @@ contract OxAuth is IOxAuth {
     function revokeGrantToRequester(
         address dataRequester,
         string memory kycField
-    ) external override onlyRequestedAccount(msg.sender, kycField) {
-        _Approve[msg.sender][dataRequester][kycField] = false;
+    ) external override onlyRequestedAccount(dataRequester, kycField) {
+        bytes32 key = _encodeKey(msg.sender, dataRequester, kycField);
+        uint256 index = uint256(uint8(key[0])) % 32;
+        uint256 bitMask = _getBitMask(index);
+        _approve[key] &= ~bitMask;
         emit GrantRevoke(msg.sender, dataRequester, kycField);
     }
 }
