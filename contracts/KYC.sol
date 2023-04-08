@@ -33,7 +33,7 @@ contract KYC is IKYC, OxAuth {
     /// @notice Mapped hased of User details to its address
     mapping(address => bytes32) private s_hashedData;
 
-    mapping(address => mapping(address => mapping(string => string))) private retievableData;
+    mapping(bytes32 => string) private retrievableData;
 
     address private immutable nftAddress;
 
@@ -336,13 +336,13 @@ contract KYC is IKYC, OxAuth {
         address dataRequester,
         string memory kycField,
         string memory data
-    ) external override {
-        // Checkes whether the data is approved or not
-        if (!OxAuth._Approve[msg.sender][dataRequester][kycField]) {
+    ) external {
+        bytes32 approveKey = _encodeKey(msg.sender, dataRequester, kycField);
+        if (OxAuth._approve[approveKey] == 0) {
             revert KYC__NotYetApprovedToEncryptWithPublicKey();
         }
-        // stores the encrypted data in the mapping.
-        retievableData[msg.sender][dataRequester][kycField] = data;
+        bytes32 retrieveKey = _encodeKey(msg.sender, dataRequester, kycField);
+        retrievableData[retrieveKey] = data;
     }
 
     /*///////////////////////////////////////////////////////////////////////////////
@@ -355,11 +355,12 @@ contract KYC is IKYC, OxAuth {
     function getRequestedDataFromProvider(
         address dataProvider,
         string memory kycField
-    ) external view override onlyMinted returns (string memory) {
-        if (!OxAuth._Approve[dataProvider][msg.sender][kycField]) {
+    ) external view onlyMinted returns (string memory) {
+        bytes32 approveKey = _encodeKey(dataProvider, msg.sender, kycField);
+        if (OxAuth._approve[approveKey] == 0) {
             revert KYC__NotYetApprovedToView();
         }
-        // returns the data
-        return retievableData[dataProvider][msg.sender][kycField];
+        bytes32 key = _encodeKey(dataProvider, msg.sender, kycField);
+        return retrievableData[key];
     }
 }
