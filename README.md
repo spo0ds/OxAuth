@@ -61,7 +61,7 @@ OxAuth is a decentralized and non-custodial KYC system that leverages blockchain
 
 ### USAGE
 
-To run Locally on ganache-cli
+To run on local blockchain
 
 ```
 
