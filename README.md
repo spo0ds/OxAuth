@@ -6,7 +6,7 @@ OxAuth is a decentralized and non-custodial KYC system that leverages blockchain
 | ------------------------------ |
 | **Why OxAuth?**                |
 | **OxAuth Architecture**        |
-| **Steps To Run The OxyMutual** |
+| **Steps To Run The OxAuth** |
 | - REQUIREMENTS                 |
 | - QUICKSTART                   |
 | - USAGE                        |
@@ -51,9 +51,9 @@ OxAuth is a decentralized and non-custodial KYC system that leverages blockchain
 
 ```
 
-    git clone https://github.com/spo0ds/OxyMutual.git
+    git clone https://github.com/spo0ds/OxAuth.git
 
-    cd OxyMutual
+    cd OxAuth
 
     yarn
 
